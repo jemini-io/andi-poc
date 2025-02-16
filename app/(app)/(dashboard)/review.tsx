@@ -24,7 +24,7 @@ export default function Review() {
   }, []);
 
   const handleClose = () => {
-    router.replace('/(app)/(tabs)');
+    router.replace('/(app)/dashboard');
   };
 
   const getSourceIcon = (source: 'facebook' | 'instagram' | 'linkedin') => {

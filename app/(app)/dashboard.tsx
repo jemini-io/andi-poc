@@ -1,12 +1,12 @@
-import { useState } from 'react';
 import { View, StyleSheet, ScrollView, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
 import { usePartnersStore } from '../../store/partners';
 import { usePostsStore } from '../../store/posts';
 import { useStatsStore } from '../../store/stats';
-import { useTheme, Text, Surface, Card, TouchableRipple, Avatar } from 'react-native-paper';
 import { useReceivedReferralsStore } from '../../store/received-referrals';
+import { useTheme, Text, Surface, Card, TouchableRipple, Avatar } from 'react-native-paper';
+import { useProfileStore } from '../../store/profile';
 
 export default function Dashboard() {
   const theme = useTheme();
@@ -19,7 +19,18 @@ export default function Dashboard() {
   const opportunities = getOpportunities();
 
   // Filter out posts that already have referrals
-  const availableOpportunities = posts.filter(post => !hasReferral(post.id));
+  const availableOpportunities = posts
+    .filter(post => !hasReferral(post.id))
+    .sort((a, b) => {
+      // Convert relative timestamps to comparable values
+      const getTimeValue = (timestamp: string) => {
+        if (timestamp.includes('h')) return parseInt(timestamp) * 60; // hours to minutes
+        if (timestamp.includes('d')) return parseInt(timestamp) * 24 * 60; // days to minutes
+        return 0;
+      };
+      return getTimeValue(a.timestamp) - getTimeValue(b.timestamp);
+    })
+    .slice(0, 3); // Take only the first 3
 
   const getSourceIcon = (source: 'facebook' | 'instagram' | 'linkedin') => {
     switch (source) {
@@ -33,6 +44,7 @@ export default function Dashboard() {
   };
 
   const { maxPartners, getUsedSlots } = usePartnersStore();
+  const profile = useProfileStore(state => state.profile);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -40,23 +52,22 @@ export default function Dashboard() {
         {/* Header */}
         <Surface style={[styles.header, { backgroundColor: theme.colors.surface }]} elevation={1}>
           <View style={styles.headerContent}>
-            <View style={styles.headerLeft}>
-              <Text variant="headlineLarge" style={{ color: theme.colors.onSurface }}>Andi's List</Text>
-              <Text variant="titleMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-                Your AI Referral Agent
-              </Text>
-            </View>
-            <Avatar.Image 
-              size={50} 
-              source={{ uri: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=80' }}
-              style={styles.avatar}
-            />
+            <Link href="/edit-profile" asChild>
+              <TouchableRipple>
+                <Avatar.Image 
+                  size={40} 
+                  source={{ uri: profile.avatar }}
+                />
+              </TouchableRipple>
+            </Link>
+            <Text variant="headlineMedium" style={{ color: theme.colors.onSurface }}>{profile.name}</Text>
+            <Ionicons name="settings-outline" size={24} color={theme.colors.onSurface} />
           </View>
         </Surface>
 
         {/* Scoreboard */}
         <Surface style={[styles.scoreboardContainer, { backgroundColor: theme.colors.surface }]} elevation={1}>
-          <Link href="/(app)/(dashboard)/received-referrals" asChild>
+          <Link href="/received-referrals" asChild>
             <TouchableRipple>
               <View style={styles.scoreCard}>
                 <Text variant="headlineMedium" style={{ color: theme.colors.primary }}>{referralsReceived}</Text>
@@ -68,10 +79,14 @@ export default function Dashboard() {
             <Text variant="headlineMedium" style={{ color: theme.colors.primary }}>{referralsGiven}</Text>
             <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>Referrals Given</Text>
           </View>
-          <View style={styles.scoreCard}>
-            <Text variant="headlineMedium" style={{ color: theme.colors.primary }}>{opportunities}</Text>
-            <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>Opportunities</Text>
-          </View>
+          <Link href="/opportunities" asChild>
+            <TouchableRipple>
+              <View style={styles.scoreCard}>
+                <Text variant="headlineMedium" style={{ color: theme.colors.primary }}>{opportunities}</Text>
+                <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>Opportunities</Text>
+              </View>
+            </TouchableRipple>
+          </Link>
         </Surface>
 
         {/* Referral Opportunities */}
@@ -90,7 +105,7 @@ export default function Dashboard() {
             </Card>
           ) : (
             availableOpportunities.map((post) => (
-              <Link href={`/(app)/(dashboard)/details?id=${post.id}`} asChild key={post.id}>
+              <Link href={`/details?id=${post.id}` as any} asChild key={post.id}>
                 <TouchableRipple>
                   <Card style={styles.postCard} mode="outlined">
                     <Card.Content>
@@ -149,7 +164,7 @@ export default function Dashboard() {
           >
             {partners.map((partner) => (
               <Link 
-                href={`/(app)/(dashboard)/edit-partner?id=${partner.id}`} 
+                href={`/edit-partner?id=${partner.id}` as any} 
                 asChild 
                 key={partner.id}
               >
@@ -173,7 +188,7 @@ export default function Dashboard() {
             ))}
             
             {/* Add Partner Card */}
-            <Link href="/(app)/(dashboard)/add-partner" asChild>
+            <Link href="/add-partner" asChild>
               <TouchableRipple>
                 <Card style={[styles.partnerCard, styles.addPartnerCard]} mode="outlined">
                   <Card.Content style={styles.partnerCardContent}>
@@ -199,20 +214,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    paddingTop: 60,
+    paddingTop: 50,
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingBottom: 15,
   },
   headerContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  headerLeft: {
-    flex: 1,
-  },
-  avatar: {
-    marginLeft: 16,
   },
   scoreboardContainer: {
     flexDirection: 'row',

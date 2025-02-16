@@ -6,24 +6,7 @@ import { router } from 'expo-router';
 import { usePartnersStore } from '../../../store/partners';
 import { usePostsStore } from '../../../store/posts';
 import { useTheme, Text, Surface, Card, Button, TextInput, IconButton } from 'react-native-paper';
-
-const findMatchingPartner = (postId: string, getPartnerById: (id: string) => any) => {
-  let partnerId;
-  switch (postId) {
-    case '1':
-      partnerId = '1'; // Financial Advisor
-      break;
-    case '2':
-      partnerId = '2'; // Business Attorney
-      break;
-    case '3':
-      partnerId = '3'; // Contractor
-      break;
-    default:
-      return undefined;
-  }
-  return getPartnerById(partnerId);
-};
+import { useStatsStore } from '../../../store/stats';
 
 const generateDraftMessage = (post: any, partner: any): string => {
   const intro = "I'd like to recommend";
@@ -52,8 +35,9 @@ export default function Details() {
   const addComment = usePostsStore(state => state.addComment);
   const post = getPostById(id);
   const getPartnerById = usePartnersStore(state => state.getPartnerById);
-  const matchingPartner = findMatchingPartner(id, getPartnerById);
-  
+  const addGivenReferral = useStatsStore(state => state.addGivenReferral);
+  const matchingPartner = post?.matchedUserId ? getPartnerById(post.matchedUserId) : undefined;
+
   const [draftMessage, setLocalDraftMessage] = useState(
     matchingPartner ? generateDraftMessage(post!, matchingPartner) : ''
   );
@@ -72,6 +56,8 @@ export default function Details() {
       timestamp: 'Just now',
       isReferral: true
     });
+
+    addGivenReferral();
     
     // Store the draft message in global state
     setDraftMessage(draftMessage);

@@ -4,6 +4,7 @@ import { usePostsStore } from './posts';
 interface StatsState {
   referralsReceived: number;
   referralsGiven: number;
+  getReferralsGiven: () => number;
   getOpportunities: () => number;
   hasReferral: (postId: string) => boolean;
   addGivenReferral: () => void;
@@ -11,8 +12,8 @@ interface StatsState {
 
 export const useStatsStore = create<StatsState>((set, get) => ({
   referralsReceived: 5, // Hardcoded as per requirement
-  referralsGiven: 3, // Initial value
-  
+  referralsGiven: 0, // Initial value
+  getReferralsGiven: () => get().referralsGiven,
   getOpportunities: () => {
     const posts = usePostsStore.getState().posts;
     return posts.reduce((count, post) => {

@@ -1,59 +1,83 @@
-import { useState } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useTheme, Text, TextInput, Button, Surface } from 'react-native-paper';
+import { useState, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, FlatList } from 'react-native';
+import { useTheme, Text, Searchbar, Button, Surface, List, Divider, ActivityIndicator } from 'react-native-paper';
 import { usePartnersStore } from '../../../store/partners';
 import NavigationBar from '../components/NavigationBar';
 
+interface Suggestion {
+  id: string;
+  email: string;
+  name: string;
+  business: string;
+}
+
 export default function AddPartner() {
   const theme = useTheme();
-  const router = useRouter();
   const addPartner = usePartnersStore(state => state.addPartner);
+  const partners = usePartnersStore(state => state.partners);
+  const hasAvailableSlots = usePartnersStore(state => state.hasAvailableSlots);
 
-  const [name, setName] = useState('');
-  const [business, setBusiness] = useState('');
-  const [slogan, setSlogan] = useState('');
-  const [category, setCategory] = useState('');
-  const [image, setImage] = useState('');
-  const [phone, setPhone] = useState('');
-  const [website, setWebsite] = useState('');
-  const [social, setSocial] = useState({
-    linkedin: '',
-    facebook: '',
-    instagram: '',
-  });
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  useEffect(() => {
+    if (email.length > 0) {
+      const filtered = partners
+        .filter(p => 
+          p.email.toLowerCase().includes(email.toLowerCase()) ||
+          p.name.toLowerCase().includes(email.toLowerCase()) ||
+          p.business.toLowerCase().includes(email.toLowerCase())
+        )
+        .map(p => ({
+          id: p.id,
+          email: p.email,
+          name: p.name,
+          business: p.business,
+        }));
+      setSuggestions(filtered);
+      setShowSuggestions(true);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  }, [email, partners]);
 
   const handleSubmit = async () => {
-    if (!name || !business || !category) return;
+    if (!email || !hasAvailableSlots()) return;
 
     setLoading(true);
     try {
-      const partnerImage = image || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80';
-      
       await addPartner({
         id: Date.now().toString(),
-        name,
-        business,
-        slogan,
-        category,
-        image: partnerImage,
-        phone: phone || undefined,
-        website: website || undefined,
-        social: {
-          ...(social.linkedin && { linkedin: social.linkedin }),
-          ...(social.facebook && { facebook: social.facebook }),
-          ...(social.instagram && { instagram: social.instagram }),
-        },
+        email,
+        name: '',
+        business: '',
+        slogan: '',
+        category: '',
+        image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80',
       });
       
-      router.back();
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+        setEmail('');
+      }, 2000);
     } catch (error) {
-      console.error('Failed to add partner:', error);
+      console.error('Failed to invite partner:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  const handleSelectSuggestion = (suggestion: Suggestion) => {
+    setEmail(suggestion.email);
+    setShowSuggestions(false);
+  };
+
+  const isExistingEmail = partners.some(p => p.email.toLowerCase() === email.toLowerCase());
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -61,114 +85,67 @@ export default function AddPartner() {
       
       <ScrollView style={styles.content}>
         <Surface style={[styles.header, { backgroundColor: theme.colors.surface }]} elevation={1}>
-          <Text variant="headlineMedium" style={{ color: theme.colors.onSurface }}>Add Partner</Text>
+          <Text variant="headlineMedium" style={{ color: theme.colors.onSurface }}>Invite Partner</Text>
         </Surface>
 
         <Surface style={[styles.form, { backgroundColor: theme.colors.surface }]} elevation={1}>
-          <Text variant="titleMedium" style={styles.sectionTitle}>Basic Information</Text>
+          <Text variant="bodyMedium" style={styles.description}>
+            Search for an existing partner or enter a new email address to send an invitation.
+          </Text>
           
-          <TextInput
-            label="Partner Name"
-            value={name}
-            onChangeText={setName}
-            mode="outlined"
-            style={styles.input}
-            required
+          <Searchbar
+            placeholder="Search or enter email"
+            onChangeText={setEmail}
+            value={email}
+            style={styles.searchbar}
+            autoCapitalize="none"
+            disabled={loading || showSuccess}
           />
 
-          <TextInput
-            label="Business Name"
-            value={business}
-            onChangeText={setBusiness}
-            mode="outlined"
-            style={styles.input}
-            required
-          />
+          {showSuggestions && suggestions.length > 0 && (
+            <Surface style={styles.suggestions} elevation={2}>
+              <FlatList
+                data={suggestions}
+                keyExtractor={item => item.id}
+                ItemSeparatorComponent={Divider}
+                renderItem={({ item }) => (
+                  <List.Item
+                    title={item.name || item.email}
+                    description={item.business}
+                    onPress={() => handleSelectSuggestion(item)}
+                  />
+                )}
+              />
+            </Surface>
+          )}
 
-          <TextInput
-            label="Business Category"
-            value={category}
-            onChangeText={setCategory}
-            mode="outlined"
-            style={styles.input}
-            required
-          />
+          {email && !isExistingEmail && !showSuccess && (
+            <Text variant="bodyMedium" style={styles.inviteMessage}>
+              An invitation email will be sent to {email} to join your referral network.
+            </Text>
+          )}
 
-          <TextInput
-            label="Business Slogan"
-            value={slogan}
-            onChangeText={setSlogan}
-            mode="outlined"
-            style={styles.input}
-          />
-
-          <TextInput
-            label="Profile Image URL"
-            value={image}
-            onChangeText={setImage}
-            mode="outlined"
-            style={styles.input}
-            placeholder="https://..."
-          />
-
-          <Text variant="titleMedium" style={styles.sectionTitle}>Contact Information</Text>
-
-          <TextInput
-            label="Phone Number"
-            value={phone}
-            onChangeText={setPhone}
-            mode="outlined"
-            style={styles.input}
-            keyboardType="phone-pad"
-          />
-
-          <TextInput
-            label="Website"
-            value={website}
-            onChangeText={setWebsite}
-            mode="outlined"
-            style={styles.input}
-            keyboardType="url"
-          />
-
-          <Text variant="titleMedium" style={styles.sectionTitle}>Social Media</Text>
-
-          <TextInput
-            label="LinkedIn Profile"
-            value={social.linkedin}
-            onChangeText={(text) => setSocial(prev => ({ ...prev, linkedin: text }))}
-            mode="outlined"
-            style={styles.input}
-          />
-
-          <TextInput
-            label="Facebook Profile"
-            value={social.facebook}
-            onChangeText={(text) => setSocial(prev => ({ ...prev, facebook: text }))}
-            mode="outlined"
-            style={styles.input}
-          />
-
-          <TextInput
-            label="Instagram Profile"
-            value={social.instagram}
-            onChangeText={(text) => setSocial(prev => ({ ...prev, instagram: text }))}
-            mode="outlined"
-            style={styles.input}
-          />
+          {showSuccess && (
+            <View style={styles.successMessage}>
+              <Text variant="bodyMedium" style={styles.successText}>
+                Invitation sent successfully!
+              </Text>
+              <ActivityIndicator size="small" />
+            </View>
+          )}
         </Surface>
 
-        <View style={styles.buttonContainer}>
+        <Surface style={[styles.footer, { backgroundColor: theme.colors.surface }]} elevation={1}>
           <Button
             mode="contained"
             onPress={handleSubmit}
             style={styles.button}
             loading={loading}
-            disabled={loading || !name || !business || !category}
+            disabled={loading || !email || !hasAvailableSlots() || isExistingEmail}
           >
-            Add Partner
+            {isExistingEmail ? 'Already a Partner' : 'Send Invitation'}
           </Button>
-        </View>
+        </Surface>
       </ScrollView>
     </View>
   );
@@ -192,16 +169,42 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 8,
   },
-  sectionTitle: {
-    marginBottom: 16,
+  description: {
+    marginBottom: 20,
+    color: '#666',
   },
-  input: {
-    marginBottom: 16,
+  searchbar: {
+    marginBottom: 8,
   },
-  buttonContainer: {
+  suggestions: {
+    maxHeight: 200,
+    marginBottom: 16,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  inviteMessage: {
+    marginTop: 16,
+    color: '#6750A4', // Using a default primary color instead of theme
+    fontStyle: 'italic',
+  },
+  footer: {
     padding: 16,
+    marginTop: 16,
+    marginHorizontal: 12,
+    borderRadius: 8,
   },
   button: {
     marginTop: 8,
+  },
+  successMessage: {
+    marginTop: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  successText: {
+    color: '#4CAF50',
+    fontWeight: '500',
   },
 }); 

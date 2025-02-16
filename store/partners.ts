@@ -2,6 +2,7 @@ import { create } from 'zustand';
 
 export interface Partner {
   id: string;
+  email: string;
   name: string;
   business: string;
   slogan: string;
@@ -20,6 +21,7 @@ export interface Partner {
 const INITIAL_PARTNERS: Partner[] = [
   {
     id: '1',
+    email: 'sarah@example.com',
     name: 'Sarah Chen',
     business: 'Evergreen Financial Planning',
     slogan: 'Building Wealth, Securing Futures',
@@ -34,6 +36,7 @@ const INITIAL_PARTNERS: Partner[] = [
   },
   {
     id: '2',
+    email: 'michael@example.com',
     name: 'Michael Rodriguez',
     business: 'Elite Real Estate Group',
     slogan: 'Your Dream Home Awaits',
@@ -48,6 +51,7 @@ const INITIAL_PARTNERS: Partner[] = [
   },
   {
     id: '3',
+    email: 'jennifer@example.com',
     name: 'Jennifer Park',
     business: 'Bright Smile Dental',
     slogan: 'Creating Beautiful Smiles Daily',
@@ -62,6 +66,7 @@ const INITIAL_PARTNERS: Partner[] = [
   },
   {
     id: '4',
+    email: 'david@example.com',
     name: 'David Thompson',
     business: 'Thompson Law Firm',
     slogan: 'Justice Served with Excellence',
@@ -76,6 +81,7 @@ const INITIAL_PARTNERS: Partner[] = [
   },
   {
     id: '5',
+    email: 'lisa@example.com',
     name: 'Lisa Martinez',
     business: 'Digital Marketing Solutions',
     slogan: 'Growing Your Digital Presence',
