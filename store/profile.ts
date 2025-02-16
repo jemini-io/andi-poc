@@ -20,16 +20,16 @@ interface ProfileState {
 }
 
 const INITIAL_PROFILE: Profile = {
-  name: 'Andi',
-  email: 'andi@example.com',
-  phone: '',
+  name: 'Pat',
+  email: 'pat@example.com',
+  phone: '123-456-7890',
   avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=80',
-  business: 'Andi\'s Referral Network',
-  website: '',
+  business: 'Premium Goods and Services',
+  website: 'www.premiumgoodsandservices.com',
   social: {
-    linkedin: '',
-    facebook: '',
-    instagram: '',
+    linkedin: 'www.linkedin.com/in/pat',
+    facebook: 'www.facebook.com/pat',
+    instagram: 'www.instagram.com/pat',
   },
 };
 

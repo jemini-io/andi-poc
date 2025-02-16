@@ -7,6 +7,7 @@ import { useStatsStore } from '../../store/stats';
 import { useReceivedReferralsStore } from '../../store/received-referrals';
 import { useTheme, Text, Surface, Card, TouchableRipple, Avatar } from 'react-native-paper';
 import { useProfileStore } from '../../store/profile';
+import { useFonts } from 'expo-font';
 
 export default function Dashboard() {
   const theme = useTheme();
@@ -32,7 +33,7 @@ export default function Dashboard() {
     })
     .slice(0, 3); // Take only the first 3
 
-  const getSourceIcon = (source: 'facebook' | 'instagram' | 'linkedin') => {
+  const getSourceIcon = (source: 'facebook' | 'instagram' | 'linkedin' | 'nextdoor' | 'alignable') => {
     switch (source) {
       case 'facebook':
         return 'logo-facebook';
@@ -40,11 +41,23 @@ export default function Dashboard() {
         return 'logo-instagram';
       case 'linkedin':
         return 'logo-linkedin';
+      case 'nextdoor':
+        return 'home-outline';
+      case 'alignable':
+        return 'business-outline';
     }
   };
 
   const { maxPartners, getUsedSlots } = usePartnersStore();
   const profile = useProfileStore(state => state.profile);
+
+  const [fontsLoaded] = useFonts({
+    'DancingScript': require('../../assets/fonts/DancingScript-Bold.ttf'),  // Adjust path as needed
+  });
+
+  if (!fontsLoaded) {
+    return null; // Or a loading screen
+  }
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -60,8 +73,11 @@ export default function Dashboard() {
                 />
               </TouchableRipple>
             </Link>
-            <Text variant="headlineMedium" style={{ color: theme.colors.onSurface }}>{profile.name}</Text>
-            <Ionicons name="settings-outline" size={24} color={theme.colors.onSurface} />
+            <Text variant="headlineMedium" style={[{ fontFamily: 'DancingScript', color: theme.colors.primary }]}>
+              Andi AI Agent
+            </Text>
+            <div></div>
+            {/* <Ionicons name="settings-outline" size={24} color={theme.colors.onSurface} /> */}
           </View>
         </Surface>
 
@@ -214,9 +230,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    paddingTop: 50,
+    paddingTop: 10,
     paddingHorizontal: 20,
-    paddingBottom: 15,
+    paddingBottom: 10,
   },
   headerContent: {
     flexDirection: 'row',

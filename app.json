@@ -15,7 +15,13 @@
       "output": "static",
       "useHash": true
     },
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router",
+      "expo-font"
+    ],
+    "fonts": [
+      "./assets/fonts/DancingScript-Bold.ttf"
+    ],
     "experiments": {
       "typedRoutes": true
     }

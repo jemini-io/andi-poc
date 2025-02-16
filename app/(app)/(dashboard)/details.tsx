@@ -77,7 +77,7 @@ export default function Details() {
     );
   }
 
-  const getSourceIcon = (source: 'facebook' | 'instagram' | 'linkedin') => {
+  const getSourceIcon = (source: 'facebook' | 'instagram' | 'linkedin' | 'nextdoor' | 'alignable') => {
     switch (source) {
       case 'facebook':
         return 'logo-facebook';
@@ -85,6 +85,10 @@ export default function Details() {
         return 'logo-instagram';
       case 'linkedin':
         return 'logo-linkedin';
+      case 'nextdoor':
+        return 'home-outline';
+      case 'alignable':
+        return 'business-outline';
     }
   };
 
@@ -94,7 +98,7 @@ export default function Details() {
         <IconButton
           icon="close"
           size={24}
-          onPress={() => router.back()}
+          onPress={() => router.push('/dashboard')}
         />
         <Text variant="titleLarge" style={styles.headerTitle}>Referral Opportunity</Text>
       </Surface>
@@ -166,33 +170,6 @@ export default function Details() {
                     </Surface>
                   </View>
                 </View>
-
-                <View style={styles.contactInfo}>
-                  {matchingPartner.phone && (
-                    <View style={styles.contactItem}>
-                      <Ionicons name="call-outline" size={20} color={theme.colors.onSurfaceVariant} />
-                      <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, marginLeft: 10 }}>
-                        {matchingPartner.phone}
-                      </Text>
-                    </View>
-                  )}
-                  {matchingPartner.website && (
-                    <View style={styles.contactItem}>
-                      <Ionicons name="globe-outline" size={20} color={theme.colors.onSurfaceVariant} />
-                      <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, marginLeft: 10 }}>
-                        {matchingPartner.website}
-                      </Text>
-                    </View>
-                  )}
-                  {matchingPartner.social && Object.entries(matchingPartner.social).map(([platform, url]) => (
-                    <View key={platform} style={styles.contactItem}>
-                      <Ionicons name={`logo-${platform}`} size={20} color={theme.colors.onSurfaceVariant} />
-                      <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, marginLeft: 10 }}>
-                        {url}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
               </Card.Content>
             </Card>
 
@@ -209,7 +186,7 @@ export default function Details() {
                     value={draftMessage}
                     onChangeText={setLocalDraftMessage}
                     multiline
-                    numberOfLines={4}
+                    numberOfLines={10}
                     placeholder="Enter your referral message..."
                     style={styles.draftInput}
                   />

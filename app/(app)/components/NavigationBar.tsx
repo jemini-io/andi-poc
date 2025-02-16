@@ -12,7 +12,7 @@ export default function NavigationBar() {
         <IconButton
           icon="arrow-left"
           size={24}
-          onPress={() => router.back()}
+          onPress={() => router.push('/dashboard')}
         />
       </View>
     </Surface>

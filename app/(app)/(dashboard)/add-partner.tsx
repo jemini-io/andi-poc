@@ -99,7 +99,7 @@ export default function AddPartner() {
             value={email}
             style={styles.searchbar}
             autoCapitalize="none"
-            disabled={loading || showSuccess}
+            editable={!loading && !showSuccess}
           />
 
           {showSuggestions && suggestions.length > 0 && (
