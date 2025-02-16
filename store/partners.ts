@@ -102,6 +102,7 @@ interface PartnersState {
   clearPartners: () => void;
   hasAvailableSlots: () => boolean;
   getUsedSlots: () => number;
+  updatePartner: (partner: Partner) => void;
 }
 
 export const usePartnersStore = create<PartnersState>((set, get) => ({
@@ -130,4 +131,11 @@ export const usePartnersStore = create<PartnersState>((set, get) => ({
   clearPartners: () => set({ partners: [] }),
   hasAvailableSlots: () => get().partners.length < MAX_PARTNERS,
   getUsedSlots: () => get().partners.length,
+  updatePartner: (partner: Partner) => {
+    set(state => ({
+      partners: state.partners.map(p => 
+        p.id === partner.id ? partner : p
+      )
+    }));
+  },
 }));

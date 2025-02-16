@@ -6,16 +6,16 @@ import { usePartnersStore } from '../../store/partners';
 import { usePostsStore } from '../../store/posts';
 import { useStatsStore } from '../../store/stats';
 import { useTheme, Text, Surface, Card, TouchableRipple, Avatar } from 'react-native-paper';
+import { useReceivedReferralsStore } from '../../store/received-referrals';
 
 export default function Dashboard() {
   const theme = useTheme();
   const partners = usePartnersStore(state => state.partners);
   const posts = usePostsStore(state => state.posts);
-  const topPartners = partners.slice(0, 3);
   const hasReferral = useStatsStore(state => state.hasReferral);
   
-  const { referralsReceived, getReferralsGiven, getOpportunities } = useStatsStore();
-  const referralsGiven = getReferralsGiven();
+  const referralsReceived = useReceivedReferralsStore(state => state.getTotalReceived());
+  const { referralsGiven, getOpportunities } = useStatsStore();
   const opportunities = getOpportunities();
 
   // Filter out posts that already have referrals
@@ -56,11 +56,15 @@ export default function Dashboard() {
 
         {/* Scoreboard */}
         <Surface style={[styles.scoreboardContainer, { backgroundColor: theme.colors.surface }]} elevation={1}>
+          <Link href="/(app)/(dashboard)/received-referrals" asChild>
+            <TouchableRipple>
+              <View style={styles.scoreCard}>
+                <Text variant="headlineMedium" style={{ color: theme.colors.primary }}>{referralsReceived}</Text>
+                <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>Referrals Received</Text>
+              </View>
+            </TouchableRipple>
+          </Link>
           <View style={styles.scoreCard}>
-            <Text variant="headlineMedium" style={{ color: theme.colors.primary }}>{referralsReceived}</Text>
-            <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>Referrals Received</Text>
-          </View>
-          <View style={[styles.scoreCard, styles.middleCard, { borderColor: theme.colors.outlineVariant }]}>
             <Text variant="headlineMedium" style={{ color: theme.colors.primary }}>{referralsGiven}</Text>
             <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>Referrals Given</Text>
           </View>
@@ -132,9 +136,9 @@ export default function Dashboard() {
         {/* Top Partners */}
         <Surface style={[styles.section, styles.lastSection, { backgroundColor: theme.colors.surface }]} elevation={1}>
           <View style={styles.sectionHeader}>
-            <Text variant="titleLarge" style={{ color: theme.colors.onSurface }}>Top Partners</Text>
+            <Text variant="titleLarge" style={{ color: theme.colors.onSurface }}>Referral Partners</Text>
             <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-              {getUsedSlots()}/{maxPartners} slots
+              {getUsedSlots()}/{maxPartners}
             </Text>
           </View>
 
@@ -143,25 +147,33 @@ export default function Dashboard() {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.partnersScroll}
           >
-            {topPartners.map((partner) => (
-              <Card key={partner.id} style={styles.partnerCard} mode="outlined">
-                <Card.Content style={styles.partnerCardContent}>
-                  <Image
-                    source={{ uri: partner.image }}
-                    style={styles.partnerImage}
-                  />
-                  <Text variant="titleMedium" style={[styles.partnerName, { color: theme.colors.onSurface }]}>
-                    {partner.name}
-                  </Text>
-                  <Text variant="bodySmall" style={[styles.partnerBusiness, { color: theme.colors.onSurfaceVariant }]}>
-                    {partner.business}
-                  </Text>
-                </Card.Content>
-              </Card>
+            {partners.map((partner) => (
+              <Link 
+                href={`/(app)/(dashboard)/edit-partner?id=${partner.id}`} 
+                asChild 
+                key={partner.id}
+              >
+                <TouchableRipple>
+                  <Card style={styles.partnerCard} mode="outlined">
+                    <Card.Content style={styles.partnerCardContent}>
+                      <Image
+                        source={{ uri: partner.image }}
+                        style={styles.partnerImage}
+                      />
+                      <Text variant="titleMedium" style={[styles.partnerName, { color: theme.colors.onSurface }]}>
+                        {partner.name}
+                      </Text>
+                      <Text variant="bodySmall" style={[styles.partnerBusiness, { color: theme.colors.onSurfaceVariant }]}>
+                        {partner.business}
+                      </Text>
+                    </Card.Content>
+                  </Card>
+                </TouchableRipple>
+              </Link>
             ))}
             
             {/* Add Partner Card */}
-            <Link href="/add-partner" asChild>
+            <Link href="/(app)/(dashboard)/add-partner" asChild>
               <TouchableRipple>
                 <Card style={[styles.partnerCard, styles.addPartnerCard]} mode="outlined">
                   <Card.Content style={styles.partnerCardContent}>

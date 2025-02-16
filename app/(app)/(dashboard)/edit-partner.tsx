@@ -1,14 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTheme, Text, TextInput, Button, Surface } from 'react-native-paper';
 import { usePartnersStore } from '../../../store/partners';
 import NavigationBar from '../components/NavigationBar';
 
-export default function AddPartner() {
+export default function EditPartner() {
   const theme = useTheme();
   const router = useRouter();
-  const addPartner = usePartnersStore(state => state.addPartner);
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { getPartnerById, updatePartner, removePartner } = usePartnersStore();
 
   const [name, setName] = useState('');
   const [business, setBusiness] = useState('');
@@ -24,20 +25,36 @@ export default function AddPartner() {
   });
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    const partner = getPartnerById(id);
+    if (partner) {
+      setName(partner.name);
+      setBusiness(partner.business);
+      setSlogan(partner.slogan || '');
+      setCategory(partner.category);
+      setImage(partner.image);
+      setPhone(partner.phone || '');
+      setWebsite(partner.website || '');
+      setSocial({
+        linkedin: partner.social?.linkedin || '',
+        facebook: partner.social?.facebook || '',
+        instagram: partner.social?.instagram || '',
+      });
+    }
+  }, [id]);
+
   const handleSubmit = async () => {
     if (!name || !business || !category) return;
 
     setLoading(true);
     try {
-      const partnerImage = image || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80';
-      
-      await addPartner({
-        id: Date.now().toString(),
+      await updatePartner({
+        id,
         name,
         business,
         slogan,
         category,
-        image: partnerImage,
+        image,
         phone: phone || undefined,
         website: website || undefined,
         social: {
@@ -49,10 +66,15 @@ export default function AddPartner() {
       
       router.back();
     } catch (error) {
-      console.error('Failed to add partner:', error);
+      console.error('Failed to update partner:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDelete = () => {
+    removePartner(id);
+    router.back();
   };
 
   return (
@@ -61,7 +83,7 @@ export default function AddPartner() {
       
       <ScrollView style={styles.content}>
         <Surface style={[styles.header, { backgroundColor: theme.colors.surface }]} elevation={1}>
-          <Text variant="headlineMedium" style={{ color: theme.colors.onSurface }}>Add Partner</Text>
+          <Text variant="headlineMedium" style={{ color: theme.colors.onSurface }}>Edit Partner</Text>
         </Surface>
 
         <Surface style={[styles.form, { backgroundColor: theme.colors.surface }]} elevation={1}>
@@ -158,17 +180,29 @@ export default function AddPartner() {
           />
         </Surface>
 
-        <View style={styles.buttonContainer}>
-          <Button
-            mode="contained"
-            onPress={handleSubmit}
-            style={styles.button}
-            loading={loading}
-            disabled={loading || !name || !business || !category}
-          >
-            Add Partner
-          </Button>
-        </View>
+        <Surface style={[styles.footer, { backgroundColor: theme.colors.surface }]} elevation={1}>
+          <View style={styles.footerButtons}>
+            <Button
+              mode="outlined"
+              onPress={handleDelete}
+              style={[styles.button, styles.deleteButton]}
+              textColor={theme.colors.error}
+              disabled={loading}
+            >
+              Remove Partner
+            </Button>
+            
+            <Button
+              mode="contained"
+              onPress={handleSubmit}
+              style={[styles.button, styles.updateButton]}
+              loading={loading}
+              disabled={loading || !name || !business || !category}
+            >
+              Update Partner
+            </Button>
+          </View>
+        </Surface>
       </ScrollView>
     </View>
   );
@@ -198,10 +232,24 @@ const styles = StyleSheet.create({
   input: {
     marginBottom: 16,
   },
-  buttonContainer: {
+  footer: {
     padding: 16,
+    marginTop: 16,
+    marginHorizontal: 12,
+    borderRadius: 8,
+  },
+  footerButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
   },
   button: {
-    marginTop: 8,
+    flex: 1,
+  },
+  deleteButton: {
+    borderColor: '#FF0000', // Using direct color value instead of theme
+  },
+  updateButton: {
+    marginLeft: 8,
   },
 }); 
