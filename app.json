@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "Andi",
+    "slug": "andi-referral-agent",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "andi",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "useHash": true
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
