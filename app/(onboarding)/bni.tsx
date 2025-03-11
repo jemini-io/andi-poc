@@ -10,7 +10,7 @@ export default function BNIConnect() {
   const [password, setPassword] = useState('');
 
   const handleConnect = () => {
-    router.replace('/bni-import');
+    router.replace('/connect-sources' as any);
   };
 
   return (

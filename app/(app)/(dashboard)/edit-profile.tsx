@@ -1,149 +1,189 @@
 import { useState } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useTheme, Text, TextInput, Button, Surface } from 'react-native-paper';
+import { useTheme, Text, TextInput, Button, Surface, SegmentedButtons, Card, IconButton } from 'react-native-paper';
 import { useProfileStore } from '../../../store/profile';
 import NavigationBar from '../components/NavigationBar';
+import { Ionicons } from '@expo/vector-icons';
+
+type Tab = 'edit' | 'connect';
+
+interface SocialPlatform {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  connected: boolean;
+}
+
+const PLATFORMS: SocialPlatform[] = [
+  { id: 'nextdoor', name: 'NextDoor', icon: 'home', color: '#00B636', connected: false },
+  { id: 'linkedin', name: 'LinkedIn', icon: 'logo-linkedin', color: '#0A66C2', connected: false },
+  { id: 'reddit', name: 'Reddit', icon: 'logo-reddit', color: '#FF4500', connected: false },
+  { id: 'slack', name: 'Slack', icon: 'logo-slack', color: '#4A154B', connected: false },
+  { id: 'whatsapp', name: 'WhatsApp', icon: 'logo-whatsapp', color: '#25D366', connected: false },
+  { id: 'discord', name: 'Discord', icon: 'logo-discord', color: '#5865F2', connected: false },
+];
 
 export default function EditProfile() {
   const theme = useTheme();
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  
-  const { profile, updateProfile } = useProfileStore();
-  const { name, email, phone, avatar, business, website, social } = profile;
+  const { width } = useWindowDimensions();
+  const isLargeScreen = width > 768;
 
-  const handleSubmit = async () => {
-    if (!name || !email) return;
+  const [selectedTab, setSelectedTab] = useState<Tab>('edit');
+  const profile = useProfileStore(state => state.profile);
+  const updateProfile = useProfileStore(state => state.updateProfile);
 
-    setLoading(true);
-    try {
-      await updateProfile({ 
-        name, 
-        email, 
-        phone, 
-        avatar, 
-        business, 
-        website,
-        social 
-      });
-      router.back();
-    } catch (error) {
-      console.error('Failed to update profile:', error);
-    } finally {
-      setLoading(false);
-    }
+  const [formData, setFormData] = useState({
+    name: profile.name,
+    email: profile.email,
+    phone: profile.phone,
+    business: profile.business,
+    website: profile.website || '',
+    facebook: profile.social?.facebook || '',
+    instagram: profile.social?.instagram || '',
+  });
+
+  const handleSave = () => {
+    updateProfile({
+      ...profile,
+      ...formData,
+      social: {
+        facebook: formData.facebook,
+        instagram: formData.instagram,
+      },
+    });
+    router.back();
   };
+
+  const renderEditContent = () => (
+    <ScrollView style={styles.scrollContent}>
+      <Surface style={styles.section} elevation={0}>
+        <Text variant="titleMedium" style={styles.sectionTitle}>Basic Information</Text>
+        <TextInput
+          mode="outlined"
+          label="Full Name"
+          value={formData.name}
+          onChangeText={(text) => setFormData({ ...formData, name: text })}
+          style={styles.input}
+        />
+        <TextInput
+          mode="outlined"
+          label="Email"
+          value={formData.email}
+          onChangeText={(text) => setFormData({ ...formData, email: text })}
+          style={styles.input}
+        />
+        <TextInput
+          mode="outlined"
+          label="Phone"
+          value={formData.phone}
+          onChangeText={(text) => setFormData({ ...formData, phone: text })}
+          style={styles.input}
+        />
+        <TextInput
+          mode="outlined"
+          label="Business Name"
+          value={formData.business}
+          onChangeText={(text) => setFormData({ ...formData, business: text })}
+          style={styles.input}
+        />
+        <TextInput
+          mode="outlined"
+          label="Website"
+          value={formData.website}
+          onChangeText={(text) => setFormData({ ...formData, website: text })}
+          style={styles.input}
+        />
+      </Surface>
+
+      <Surface style={styles.section} elevation={0}>
+        <Text variant="titleMedium" style={styles.sectionTitle}>Social Media</Text>
+        <TextInput
+          mode="outlined"
+          label="Facebook Profile"
+          value={formData.facebook}
+          onChangeText={(text) => setFormData({ ...formData, facebook: text })}
+          style={styles.input}
+        />
+        <TextInput
+          mode="outlined"
+          label="Instagram Profile"
+          value={formData.instagram}
+          onChangeText={(text) => setFormData({ ...formData, instagram: text })}
+          style={styles.input}
+        />
+      </Surface>
+    </ScrollView>
+  );
+
+  const renderConnectContent = () => (
+    <ScrollView style={styles.scrollContent}>
+      <Surface style={styles.section} elevation={0}>
+        <Text variant="titleMedium" style={styles.sectionTitle}>Connect More Accounts</Text>
+        <Text variant="bodyMedium" style={styles.description}>
+          Connect additional platforms to expand your referral network
+        </Text>
+        
+        <View style={styles.platformsGrid}>
+          {PLATFORMS.map((platform) => (
+            <Card key={platform.id} style={styles.platformCard}>
+              <Card.Content style={styles.platformContent}>
+                <View style={[styles.iconContainer, { backgroundColor: platform.color }]}>
+                  <Ionicons name={platform.icon as any} size={24} color="white" />
+                </View>
+                <Text variant="titleMedium" style={styles.platformName}>{platform.name}</Text>
+                <Button
+                  mode="outlined"
+                  onPress={() => {}}
+                  style={styles.connectButton}
+                >
+                  Connect
+                </Button>
+              </Card.Content>
+            </Card>
+          ))}
+        </View>
+      </Surface>
+    </ScrollView>
+  );
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <NavigationBar />
       
-      <ScrollView style={styles.content}>
-        <Surface style={[styles.header, { backgroundColor: theme.colors.surface }]} elevation={1}>
-          <Text variant="headlineMedium" style={{ color: theme.colors.onSurface }}>Edit Profile</Text>
-        </Surface>
-
-        <Surface style={[styles.form, { backgroundColor: theme.colors.surface }]} elevation={1}>
-          <Text variant="titleMedium" style={styles.sectionTitle}>Basic Information</Text>
-          
-          <TextInput
-            label="Name"
-            value={name}
-            onChangeText={(value) => updateProfile({ name: value })}
-            mode="outlined"
-            style={styles.input}
-          />
-
-          <TextInput
-            label="Business Name"
-            value={business}
-            onChangeText={(value) => updateProfile({ business: value })}
-            mode="outlined"
-            style={styles.input}
-          />
-
-          <TextInput
-            label="Email"
-            value={email}
-            onChangeText={(value) => updateProfile({ email: value })}
-            mode="outlined"
-            style={styles.input}
-            keyboardType="email-address"
-          />
-
-          <TextInput
-            label="Phone"
-            value={phone}
-            onChangeText={(value) => updateProfile({ phone: value })}
-            mode="outlined"
-            style={styles.input}
-            keyboardType="phone-pad"
-          />
-
-          <TextInput
-            label="Website"
-            value={website}
-            onChangeText={(value) => updateProfile({ website: value })}
-            mode="outlined"
-            style={styles.input}
-            keyboardType="url"
-          />
-
-          <TextInput
-            label="Avatar URL"
-            value={avatar}
-            onChangeText={(value) => updateProfile({ avatar: value })}
-            mode="outlined"
-            style={styles.input}
-            placeholder="https://..."
-          />
-
-          <Text variant="titleMedium" style={styles.sectionTitle}>Social Media</Text>
-
-          <TextInput
-            label="LinkedIn Profile"
-            value={social?.linkedin}
-            onChangeText={(value) => updateProfile({ 
-              social: { ...social, linkedin: value } 
-            })}
-            mode="outlined"
-            style={styles.input}
-          />
-
-          <TextInput
-            label="Facebook Profile"
-            value={social?.facebook}
-            onChangeText={(value) => updateProfile({ 
-              social: { ...social, facebook: value } 
-            })}
-            mode="outlined"
-            style={styles.input}
-          />
-
-          <TextInput
-            label="Instagram Profile"
-            value={social?.instagram}
-            onChangeText={(value) => updateProfile({ 
-              social: { ...social, instagram: value } 
-            })}
-            mode="outlined"
-            style={styles.input}
+      <View style={styles.content}>
+        <Surface style={styles.header} elevation={1}>
+          <Text variant="headlineSmall">Edit Profile</Text>
+          <SegmentedButtons
+            value={selectedTab}
+            onValueChange={value => setSelectedTab(value as Tab)}
+            buttons={[
+              { value: 'edit', label: 'Edit Information' },
+              { value: 'connect', label: 'Connect Accounts' },
+            ]}
+            style={styles.tabs}
           />
         </Surface>
 
-        <Surface style={[styles.footer, { backgroundColor: theme.colors.surface }]} elevation={1}>
+        <View style={[
+          styles.mainContent,
+          isLargeScreen && styles.mainContentLarge
+        ]}>
+          {selectedTab === 'edit' ? renderEditContent() : renderConnectContent()}
+        </View>
+
+        <Surface style={styles.footer} elevation={1}>
           <Button
             mode="contained"
-            onPress={handleSubmit}
+            onPress={handleSave}
             style={styles.button}
-            loading={loading}
-            disabled={loading || !name || !email}
           >
-            Update Profile
+            Save Changes
           </Button>
         </Surface>
-      </ScrollView>
+      </View>
     </View>
   );
 }
@@ -154,14 +194,26 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    marginTop: 60,
   },
   header: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    marginBottom: 12,
+    padding: 20,
+    alignItems: 'center',
+    gap: 16,
   },
-  form: {
+  tabs: {
+    width: '100%',
+    maxWidth: 400,
+  },
+  mainContent: {
+    flex: 1,
+  },
+  mainContentLarge: {
+    flexDirection: 'row',
+  },
+  scrollContent: {
+    flex: 1,
+  },
+  section: {
     margin: 12,
     padding: 16,
     borderRadius: 8,
@@ -172,11 +224,39 @@ const styles = StyleSheet.create({
   input: {
     marginBottom: 16,
   },
+  description: {
+    marginBottom: 24,
+    opacity: 0.7,
+  },
+  platformsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 16,
+    justifyContent: 'center',
+  },
+  platformCard: {
+    width: 160,
+  },
+  platformContent: {
+    alignItems: 'center',
+    gap: 12,
+  },
+  iconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  platformName: {
+    textAlign: 'center',
+  },
+  connectButton: {
+    width: '100%',
+  },
   footer: {
     padding: 16,
-    marginTop: 16,
-    marginHorizontal: 12,
-    borderRadius: 8,
+    marginTop: 'auto',
   },
   button: {
     marginTop: 8,
