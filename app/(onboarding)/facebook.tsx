@@ -12,7 +12,7 @@ export default function FacebookConnect() {
 
   const handleConnect = () => {
     if (username && password) {
-      router.replace('/groups');
+      router.replace('/bni');
     }
   };
 

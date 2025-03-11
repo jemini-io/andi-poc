@@ -69,7 +69,7 @@ export default function GroupsSelection() {
   }, []);
 
   const handleContinue = () => {
-    router.replace('/bni');
+    router.replace('/bni-import');
   };
 
   return (

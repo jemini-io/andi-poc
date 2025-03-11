@@ -1,4 +1,4 @@
-import { View, StyleSheet, ScrollView, Image } from 'react-native';
+import { View, StyleSheet, ScrollView, Image, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
 import { usePartnersStore } from '../../store/partners';
@@ -11,6 +11,8 @@ import { useFonts } from 'expo-font';
 
 export default function Dashboard() {
   const theme = useTheme();
+  const { width } = useWindowDimensions();
+  const isLargeScreen = width > 768;
   const partners = usePartnersStore(state => state.partners);
   const posts = usePostsStore(state => state.posts);
   const hasReferral = useStatsStore(state => state.hasReferral);
@@ -58,6 +60,115 @@ export default function Dashboard() {
   if (!fontsLoaded) {
     return null; // Or a loading screen
   }
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+    content: {
+      padding: isLargeScreen ? 20 : 10,
+    },
+    header: {
+      paddingTop: 10,
+      paddingHorizontal: 20,
+      paddingBottom: 10,
+    },
+    headerContent: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    scoreboardContainer: {
+      flexDirection: 'row',
+      padding: 20,
+      marginBottom: 12,
+    },
+    scoreCard: {
+      flex: 1,
+      alignItems: 'center',
+      padding: 15,
+    },
+    middleCard: {
+      borderLeftWidth: 1,
+      borderRightWidth: 1,
+    },
+    section: {
+      marginBottom: 12,
+      paddingVertical: 20,
+    },
+    lastSection: {
+      marginBottom: 0,
+    },
+    sectionHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: 20,
+      marginBottom: 15,
+    },
+    postCard: {
+      marginHorizontal: 20,
+      marginBottom: 15,
+    },
+    emptyCard: {
+      marginHorizontal: 20,
+      marginBottom: 15,
+      padding: 20,
+    },
+    postHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 10,
+    },
+    sourceIconContainer: {
+      marginRight: 10,
+    },
+    postStats: {
+      flexDirection: 'row',
+      marginTop: 12,
+    },
+    stat: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginRight: 20,
+    },
+    partnersScroll: {
+      paddingHorizontal: 15,
+    },
+    partnerCard: {
+      marginHorizontal: 5,
+      width: 120,
+    },
+    partnerCardContent: {
+      alignItems: 'center',
+      padding: 10,
+    },
+    partnerImage: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      marginBottom: 8,
+    },
+    partnerName: {
+      textAlign: 'center',
+      marginBottom: 4,
+    },
+    partnerBusiness: {
+      textAlign: 'center',
+    },
+    addPartnerCard: {
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    addPartnerCircle: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 8,
+    },
+  });
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -224,109 +335,3 @@ export default function Dashboard() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    paddingTop: 10,
-    paddingHorizontal: 20,
-    paddingBottom: 10,
-  },
-  headerContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  scoreboardContainer: {
-    flexDirection: 'row',
-    padding: 20,
-    marginBottom: 12,
-  },
-  scoreCard: {
-    flex: 1,
-    alignItems: 'center',
-    padding: 15,
-  },
-  middleCard: {
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-  },
-  section: {
-    marginBottom: 12,
-    paddingVertical: 20,
-  },
-  lastSection: {
-    marginBottom: 0,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 15,
-  },
-  postCard: {
-    marginHorizontal: 20,
-    marginBottom: 15,
-  },
-  emptyCard: {
-    marginHorizontal: 20,
-    marginBottom: 15,
-    padding: 20,
-  },
-  postHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  sourceIconContainer: {
-    marginRight: 10,
-  },
-  postStats: {
-    flexDirection: 'row',
-    marginTop: 12,
-  },
-  stat: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 20,
-  },
-  partnersScroll: {
-    paddingHorizontal: 15,
-  },
-  partnerCard: {
-    marginHorizontal: 5,
-    width: 120,
-  },
-  partnerCardContent: {
-    alignItems: 'center',
-    padding: 10,
-  },
-  partnerImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    marginBottom: 8,
-  },
-  partnerName: {
-    textAlign: 'center',
-    marginBottom: 4,
-  },
-  partnerBusiness: {
-    textAlign: 'center',
-  },
-  addPartnerCard: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  addPartnerCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-});

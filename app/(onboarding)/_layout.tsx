@@ -5,9 +5,8 @@ export default function OnboardingLayout() {
     <Stack screenOptions={{ headerShown: false, gestureEnabled: false }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="facebook" />
-      <Stack.Screen name="groups" />
       <Stack.Screen name="bni" />
-      <Stack.Screen name="bni-import" />
+      <Stack.Screen name="connect-sources" />
     </Stack>
   );
 }
