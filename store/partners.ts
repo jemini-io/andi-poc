@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 
+// Store for managing referral partners data
 export interface Partner {
   id: string;
   email: string;
@@ -96,8 +97,10 @@ const INITIAL_PARTNERS: Partner[] = [
   }
 ];
 
+// Maximum number of partners allowed
 const MAX_PARTNERS = 10;
 
+// Store interface defining available actions and state
 interface PartnersState {
   partners: Partner[];
   maxPartners: number;
@@ -111,14 +114,19 @@ interface PartnersState {
   updatePartner: (partner: Partner) => void;
 }
 
+// Create the store with Zustand
 export const usePartnersStore = create<PartnersState>((set, get) => ({
   partners: INITIAL_PARTNERS,
   maxPartners: MAX_PARTNERS,
+  
+  // Set all partners (used for bulk updates)
   setPartners: (partners) => {
     if (partners.length <= MAX_PARTNERS) {
       set({ partners });
     }
   },
+
+  // Add a new partner if space is available
   addPartner: async (partner: Partner) => {
     const { partners, maxPartners } = get();
     
@@ -130,13 +138,25 @@ export const usePartnersStore = create<PartnersState>((set, get) => ({
       partners: [...state.partners, partner]
     }));
   },
+
+  // Remove a partner by ID
   removePartner: (id) => set((state) => ({ 
     partners: state.partners.filter(p => p.id !== id) 
   })),
+
+  // Get a specific partner by ID
   getPartnerById: (id) => get().partners.find(p => p.id === id),
+
+  // Clear all partners
   clearPartners: () => set({ partners: [] }),
+
+  // Check if more partners can be added
   hasAvailableSlots: () => get().partners.length < MAX_PARTNERS,
+
+  // Get current number of partners
   getUsedSlots: () => get().partners.length,
+
+  // Update an existing partner's information
   updatePartner: (partner: Partner) => {
     set(state => ({
       partners: state.partners.map(p => 
