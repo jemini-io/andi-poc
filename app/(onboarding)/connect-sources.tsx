@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme, Text, Surface, Card, Button, ActivityIndicator, Checkbox } from 'react-native-paper';
 import { usePartnersStore, Partner } from '../../store/partners';
+import { useProfileStore } from '../../store/profile';
 
 // Facebook Groups data
 interface Group {
@@ -136,6 +137,8 @@ export default function ConnectSources() {
   const [loadedMembers, setLoadedMembers] = useState<Partner[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(true);
   const { setPartners, clearPartners } = usePartnersStore();
+  const updateProfile = useProfileStore(state => state.updateProfile);
+  const profile = useProfileStore(state => state.profile);
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -212,7 +215,19 @@ export default function ConnectSources() {
   };
 
   const handleGoToDashboard = () => {
-    router.replace('/(app)/dashboard');
+    updateProfile({
+      email: profile.email,
+      name: profile.name,
+      avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=400&q=80',
+      phone: '(425) 555-1234',
+      business: 'Acme Professional Services',
+      social: {
+        facebook: 'facebook.com/johndoe',
+        linkedin: 'linkedin.com/in/johndoe'
+      }
+    });
+    
+    router.replace('/(app)/dashboard-v2');
   };
 
   const allLoaded = !loadingGroups && !loadingMembers;

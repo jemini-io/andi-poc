@@ -4,11 +4,13 @@ import { View, StyleSheet, Image, Animated } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme, Text, TextInput, Button, Surface } from 'react-native-paper';
+import { useProfileStore } from '../../store/profile';
 
 export default function BNIConnect() {
   const theme = useTheme();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const updateProfile = useProfileStore(state => state.updateProfile);
 
   // Animation values for fade and slide effects
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -34,6 +36,13 @@ export default function BNIConnect() {
 
   // Navigate to sources connection screen
   const handleConnect = () => {
+    // Update profile with BNI membership info
+    updateProfile({
+      business: 'BNI Member Business',
+      website: 'www.bnimember.com',
+      phone: '(425) 555-6789'
+    });
+    
     router.replace('/connect-sources' as any);
   };
 

@@ -3,11 +3,13 @@ import { View, StyleSheet, Animated } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme, Text, TextInput, Button, Surface } from 'react-native-paper';
+import { useProfileStore } from '../../store/profile';
 
 export default function SignUp() {
   const theme = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const updateProfile = useProfileStore(state => state.updateProfile);
 
   // Animation values using useRef
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -30,6 +32,13 @@ export default function SignUp() {
   }, []);
 
   const handleSignUp = () => {
+    // Begin updating the profile with the entered email
+    if (email) {
+      updateProfile({
+        email: email,
+        name: email.split('@')[0].replace(/\./g, ' ').replace(/^(.)|\s+(.)/g, c => c.toUpperCase()),
+      });
+    }
     router.replace('/facebook');
   };
 

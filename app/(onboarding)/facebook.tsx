@@ -4,11 +4,13 @@ import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme, Text, TextInput, Button, Surface } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
+import { useProfileStore } from '../../store/profile';
 
 export default function FacebookConnect() {
   const theme = useTheme();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const updateProfile = useProfileStore(state => state.updateProfile);
 
   // Animation values using useRef
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -32,6 +34,15 @@ export default function FacebookConnect() {
 
   const handleConnect = () => {
     if (username && password) {
+      // Update profile with Facebook identity
+      updateProfile({
+        email: username,
+        name: username.split('@')[0].replace(/\./g, ' ').replace(/^(.)|\s+(.)/g, c => c.toUpperCase()),
+        social: {
+          facebook: `facebook.com/${username.split('@')[0]}`
+        }
+      });
+      
       router.replace('/bni');
     }
   };
