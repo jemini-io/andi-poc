@@ -8,6 +8,7 @@ import { usePartnersStore, Partner } from '../../store/partners';
 const BNI_MEMBERS: Partner[] = [
   {
     id: '1',
+    email: 'sarah@evergreenfinancial.com',
     name: 'Sarah Chen',
     business: 'Evergreen Financial Planning',
     slogan: 'Building Wealth, Securing Futures',
@@ -22,6 +23,7 @@ const BNI_MEMBERS: Partner[] = [
   },
   {
     id: '2',
+    email: 'michael@eliterealestate.com',
     name: 'Michael Rodriguez',
     business: 'Elite Real Estate Group',
     slogan: 'Your Dream Home Awaits',
@@ -36,6 +38,7 @@ const BNI_MEMBERS: Partner[] = [
   },
   {
     id: '3',
+    email: 'jennifer@brightsmile.com',
     name: 'Jennifer Park',
     business: 'Bright Smile Dental',
     slogan: 'Creating Beautiful Smiles Daily',
@@ -50,6 +53,7 @@ const BNI_MEMBERS: Partner[] = [
   },
   {
     id: '4',
+    email: 'david@thompsonlaw.com',
     name: 'David Thompson',
     business: 'Thompson Law Firm',
     slogan: 'Justice Served with Excellence',
@@ -64,6 +68,7 @@ const BNI_MEMBERS: Partner[] = [
   },
   {
     id: '5',
+    email: 'lisa@digitalmktg.com',
     name: 'Lisa Martinez',
     business: 'Digital Marketing Solutions',
     slogan: 'Growing Your Digital Presence',
@@ -110,7 +115,9 @@ export default function BNIImport() {
   }, []);
 
   const handleGoToDashboard = () => {
-    router.replace('/(app)/dashboard');
+    router.replace({
+      pathname: '/(app)/dashboard-v2'
+    });
   };
 
   return (
