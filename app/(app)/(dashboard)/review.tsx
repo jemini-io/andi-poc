@@ -24,10 +24,10 @@ export default function Review() {
   }, []);
 
   const handleClose = () => {
-    router.replace('/(app)/dashboard');
+    router.replace('/(app)/dashboard-v2');
   };
 
-  const getSourceIcon = (source: 'facebook' | 'instagram' | 'linkedin') => {
+  const getSourceIcon = (source: 'facebook' | 'instagram' | 'linkedin' | 'nextdoor' | 'alignable') => {
     switch (source) {
       case 'facebook':
         return 'logo-facebook';
@@ -35,6 +35,10 @@ export default function Review() {
         return 'logo-instagram';
       case 'linkedin':
         return 'logo-linkedin';
+      case 'nextdoor':
+        return 'home-outline';
+      case 'alignable':
+        return 'business-outline';
     }
   };
 

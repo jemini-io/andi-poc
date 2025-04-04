@@ -23,7 +23,7 @@ export default function Opportunities() {
       return getTimeValue(a.timestamp) - getTimeValue(b.timestamp);
     });
 
-  const getSourceIcon = (source: 'facebook' | 'instagram' | 'linkedin') => {
+  const getSourceIcon = (source: 'facebook' | 'instagram' | 'linkedin' | 'nextdoor' | 'alignable') => {
     switch (source) {
       case 'facebook':
         return 'logo-facebook';
@@ -31,6 +31,10 @@ export default function Opportunities() {
         return 'logo-instagram';
       case 'linkedin':
         return 'logo-linkedin';
+      case 'nextdoor':
+        return 'home-outline';
+      case 'alignable':
+        return 'business-outline';
     }
   };
 
@@ -53,7 +57,7 @@ export default function Opportunities() {
           </Card>
         ) : (
           availableOpportunities.map((post) => (
-            <Link href={`/details?id=${post.id}` as any} asChild key={post.id}>
+            <Link href={{pathname: '/(app)/details', params: {id: post.id}}} asChild key={post.id}>
               <TouchableRipple>
                 <Card style={styles.postCard} mode="outlined">
                   <Card.Content>

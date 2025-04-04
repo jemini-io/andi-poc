@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -98,7 +98,7 @@ export default function Details() {
         <IconButton
           icon="close"
           size={24}
-          onPress={() => router.push('/dashboard')}
+          onPress={() => router.push('/dashboard-v2')}
         />
         <Text variant="titleLarge" style={styles.headerTitle}>Referral Opportunity</Text>
       </Surface>
