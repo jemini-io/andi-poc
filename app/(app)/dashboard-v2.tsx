@@ -200,7 +200,7 @@ export default function DashboardV2() {
             ) : (
               <Button 
                 mode="contained" 
-                onPress={() => router.push('/onboarding' as any)} 
+                onPress={() => router.push('/(onboarding)')} 
                 style={styles.signInButton}
                 compact
               >
@@ -258,7 +258,7 @@ export default function DashboardV2() {
                 <Text variant="bodyLarge" style={styles.signInMessage}>
                   Sign in to see referral opportunities and connect with potential partners.
                 </Text>
-                <Button mode="contained" onPress={() => router.push('/onboarding' as any)} style={styles.signInButton}>
+                <Button mode="contained" onPress={() => router.push('/(onboarding)')} style={styles.signInButton}>
                   Sign In
                 </Button>
               </Card.Content>
@@ -331,7 +331,7 @@ export default function DashboardV2() {
                 <Text variant="bodyLarge" style={styles.signInMessage}>
                   Sign in to connect with referral partners and grow your network.
                 </Text>
-                <Button mode="contained" onPress={() => router.push('/onboarding' as any)} style={styles.signInButton}>
+                <Button mode="contained" onPress={() => router.push('/(onboarding)')} style={styles.signInButton}>
                   Sign In
                 </Button>
               </Card.Content>

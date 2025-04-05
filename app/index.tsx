@@ -7,6 +7,8 @@ import SplashScreen from '../components/SplashScreen';
 declare module "expo-router" {
   interface TypedRoutes {
     "/connect-sources": {};
+    "/email": {};
+    "/(app)/dashboard-v2": {};
   }
 }
 
@@ -19,7 +21,6 @@ export default function Index() {
 
   return (
     <View style={{ flex: 1 }}>
-      <Redirect href="/(app)/dashboard-v2" />
       <SplashScreen onFadeComplete={() => setShowSplash(false)} />
     </View>
   );

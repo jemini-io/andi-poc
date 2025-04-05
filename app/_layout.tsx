@@ -8,9 +8,8 @@ export default function RootLayout() {
     <PaperProvider theme={theme}>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" options={{ gestureEnabled: false }} />
-        <Stack.Screen name="dashboard-v2" options={{ gestureEnabled: false }} />
         <Stack.Screen name="(app)" options={{ gestureEnabled: false }} />
-        <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />
+        <Stack.Screen name="(onboarding)" options={{ gestureEnabled: false }} />
       </Stack>
       <StatusBar style="auto" />
     </PaperProvider>
