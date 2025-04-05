@@ -47,6 +47,16 @@ export default function FacebookConnect() {
     }
   };
 
+  const handleSkip = () => {
+    // Skip Facebook but continue to BNI
+    router.replace('/bni');
+  };
+
+  const handleSkipToApp = () => {
+    // Skip all remaining onboarding and go straight to the app
+    router.replace('/(app)/dashboard-v2');
+  };
+
   return (
     <LinearGradient
       colors={[theme.colors.primary, theme.colors.secondary]}
@@ -107,6 +117,22 @@ export default function FacebookConnect() {
               )}
             >
               Continue with Facebook
+            </Button>
+
+            <Button
+              mode="outlined"
+              onPress={handleSkip}
+              style={styles.skipButton}
+            >
+              Skip Facebook
+            </Button>
+
+            <Button
+              mode="text"
+              onPress={handleSkipToApp}
+              style={styles.skipToAppButton}
+            >
+              Skip to Dashboard
             </Button>
           </Surface>
 
@@ -169,5 +195,13 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.7)',
     textAlign: 'center',
     marginTop: 20,
+  },
+  skipButton: {
+    marginTop: 12,
+    backgroundColor: 'transparent',
+    borderColor: '#1877F2',
+  },
+  skipToAppButton: {
+    marginTop: 8,
   },
 });

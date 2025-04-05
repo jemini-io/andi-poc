@@ -46,6 +46,16 @@ export default function BNIConnect() {
     router.replace('/connect-sources' as any);
   };
 
+  const handleSkip = () => {
+    // Skip BNI but continue to connect-sources
+    router.replace('/connect-sources' as any);
+  };
+
+  const handleSkipToApp = () => {
+    // Skip all remaining onboarding and go straight to the app
+    router.replace('/(app)/dashboard-v2');
+  };
+
   return (
     <LinearGradient
       colors={[theme.colors.primary, theme.colors.secondary]}
@@ -103,6 +113,22 @@ export default function BNIConnect() {
             >
               Connect BNI
             </Button>
+            
+            <Button
+              mode="outlined"
+              onPress={handleSkip}
+              style={styles.skipButton}
+            >
+              Skip BNI Connect
+            </Button>
+
+            <Button
+              mode="text"
+              onPress={handleSkipToApp}
+              style={styles.skipToAppButton}
+            >
+              Skip to Dashboard
+            </Button>
           </Surface>
         </Animated.View>
       </View>
@@ -155,5 +181,11 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 18,
     fontWeight: '600',
+  },
+  skipButton: {
+    marginTop: 12,
+  },
+  skipToAppButton: {
+    marginTop: 8,
   },
 });

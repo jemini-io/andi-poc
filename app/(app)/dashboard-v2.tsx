@@ -8,12 +8,16 @@ import { useReceivedReferralsStore } from '../../store/received-referrals';
 import { useTheme, Text, Surface, Card, TouchableRipple, Avatar, Button } from 'react-native-paper';
 import { useProfileStore } from '../../store/profile';
 import { useFonts } from 'expo-font';
+import { useState } from 'react';
+import SignInModal from '../../components/SignInModal';
 
 export default function DashboardV2() {
   const theme = useTheme();
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isLargeScreen = width > 768;
+  
+  const [signInModalVisible, setSignInModalVisible] = useState(false);
   
   const partners = usePartnersStore(state => state.partners);
   const posts = usePostsStore(state => state.posts);
@@ -200,7 +204,7 @@ export default function DashboardV2() {
             ) : (
               <Button 
                 mode="contained" 
-                onPress={() => router.push('/(onboarding)')} 
+                onPress={() => setSignInModalVisible(true)} 
                 style={styles.signInButton}
                 compact
               >
@@ -258,7 +262,7 @@ export default function DashboardV2() {
                 <Text variant="bodyLarge" style={styles.signInMessage}>
                   Sign in to see referral opportunities and connect with potential partners.
                 </Text>
-                <Button mode="contained" onPress={() => router.push('/(onboarding)')} style={styles.signInButton}>
+                <Button mode="contained" onPress={() => setSignInModalVisible(true)} style={styles.signInButton}>
                   Sign In
                 </Button>
               </Card.Content>
@@ -331,7 +335,7 @@ export default function DashboardV2() {
                 <Text variant="bodyLarge" style={styles.signInMessage}>
                   Sign in to connect with referral partners and grow your network.
                 </Text>
-                <Button mode="contained" onPress={() => router.push('/(onboarding)')} style={styles.signInButton}>
+                <Button mode="contained" onPress={() => setSignInModalVisible(true)} style={styles.signInButton}>
                   Sign In
                 </Button>
               </Card.Content>
@@ -372,6 +376,10 @@ export default function DashboardV2() {
           )}
         </Surface>
       </ScrollView>
+      <SignInModal 
+        visible={signInModalVisible} 
+        onDismiss={() => setSignInModalVisible(false)} 
+      />
     </View>
   );
 } 

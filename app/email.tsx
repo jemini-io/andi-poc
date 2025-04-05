@@ -42,6 +42,21 @@ export default function EmailSignUp() {
     router.replace('/(onboarding)/facebook');
   };
 
+  const handleSkipToApp = () => {
+    // Update profile with just email and go straight to dashboard
+    if (email) {
+      updateProfile({
+        email: email,
+        name: email.split('@')[0].replace(/\./g, ' ').replace(/^(.)|\s+(.)/g, c => c.toUpperCase()),
+      });
+    }
+    router.replace('/(app)/dashboard-v2');
+  };
+
+  const handleCancel = () => {
+    router.back();
+  };
+
   return (
     <LinearGradient
       colors={[theme.colors.primary, theme.colors.secondary]}
@@ -85,8 +100,27 @@ export default function EmailSignUp() {
               onPress={handleSignUp}
               style={styles.button}
               labelStyle={styles.buttonText}
+              disabled={!email}
             >
-              Get Started
+              Continue to Connect Sources
+            </Button>
+            
+            <Button
+              mode="outlined"
+              onPress={handleSkipToApp}
+              style={styles.skipButton}
+              labelStyle={styles.skipButtonText}
+              disabled={!email}
+            >
+              Skip to Dashboard
+            </Button>
+            
+            <Button
+              mode="text"
+              onPress={handleCancel}
+              style={styles.cancelButton}
+            >
+              Cancel
             </Button>
           </Surface>
         </Animated.View>
@@ -133,5 +167,15 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 18,
     fontWeight: '600',
+  },
+  skipButton: {
+    marginTop: 12,
+    borderColor: '#fff',
+  },
+  skipButtonText: {
+    fontSize: 16,
+  },
+  cancelButton: {
+    marginTop: 8,
   },
 }); 
