@@ -54,21 +54,11 @@ export default function BNIConnect() {
       phone: '(425) 555-6789'
     });
     
-    // Activate all BNI partners
-    if (partners) {
-      // Mark all partners as available after BNI connection
-      const updatedPartners = partners.map(partner => ({
-        ...partner,
-        available: true
-      }));
-      
-      // Save the updated partners to the store
-      setPartners(updatedPartners);
-      
-      console.log('BNI connected! Showing', updatedPartners.length, 'referral partners.');
-    }
-
+    // We'll let bni-members.tsx handle setting the partners available
+    // This removes the redundancy between the two files
     setConnecting(false);
+    
+    // Navigate to BNI Members page which will handle importing members
     navigate.push('BNI_MEMBERS');
   };
 

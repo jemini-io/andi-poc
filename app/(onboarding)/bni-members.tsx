@@ -1,10 +1,11 @@
 import { useEffect, useState, useRef } from 'react';
 import { View, StyleSheet, ScrollView, Image, useWindowDimensions, Animated } from 'react-native';
-import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme, Text, Surface, Card, Button, ActivityIndicator } from 'react-native-paper';
 import { usePartnersStore, Partner } from '../../store/partners';
 import { useProfileStore } from '../../store/profile';
+import { navigate } from '../navigation';
+import { Ionicons } from '@expo/vector-icons';
 
 // BNI Members data
 const BNI_MEMBERS: Partner[] = [
@@ -157,14 +158,29 @@ export default function BniMembers() {
   };
 
   const handleGoToDashboard = () => {
+    // Ensure profile is updated with BNI business info
     updateProfile({
       ...profile,
       avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=400&q=80',
       phone: '(425) 555-1234',
-      business: 'Acme Professional Services'
+      business: 'BNI Member Business'
     });
     
-    router.replace('/(app)/dashboard-v2');
+    // Make sure partners are properly set with available: true
+    if (loadedMembers.length > 0) {
+      const availableMembers = loadedMembers.map(member => ({
+        ...member,
+        available: true
+      }));
+      
+      // Save the partners to the store again to ensure they're available
+      setPartners(availableMembers);
+      
+      console.log(`BNI partners imported: ${availableMembers.length} referral partners now available.`);
+    }
+    
+    // Navigate to dashboard
+    navigate.replace('DASHBOARD');
   };
 
   // Define responsive styles
@@ -263,6 +279,16 @@ export default function BniMembers() {
     animatedContent: {
       flex: 1,
     },
+    successContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 16,
+    },
+    successText: {
+      marginLeft: 10,
+      color: theme.colors.onSurface,
+    },
   });
 
   return (
@@ -313,6 +339,15 @@ export default function BniMembers() {
                     </Text>
                   </View>
                 )}
+                
+                {!loadingMembers && loadedMembers.length === BNI_MEMBERS.length && (
+                  <View style={styles.successContainer}>
+                    <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />
+                    <Text variant="bodyMedium" style={styles.successText}>
+                      Successfully imported {loadedMembers.length} referral partners!
+                    </Text>
+                  </View>
+                )}
               </ScrollView>
             </Animated.View>
           </Surface>
@@ -329,7 +364,7 @@ export default function BniMembers() {
         >
           {loadingMembers 
             ? "Importing Members..." 
-            : "Continue to Dashboard"}
+            : "Go to Dashboard with Referral Partners"}
         </Button>
       </Surface>
     </LinearGradient>

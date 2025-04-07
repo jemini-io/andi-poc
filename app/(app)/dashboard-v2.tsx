@@ -220,6 +220,47 @@ export default function DashboardV2() {
       textAlign: 'center',
       color: '#1877F2',
     },
+    facebookConnectedBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#E3F2FD',
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 12,
+    },
+    facebookIcon: {
+      marginRight: 4,
+    },
+    facebookConnectedText: {
+      color: '#1877F2',
+    },
+    bniConnectedBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#E8F5E9',
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 12,
+    },
+    bniIcon: {
+      marginRight: 4,
+    },
+    bniConnectedText: {
+      color: '#003767',
+    },
+    bniConnectedContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    viewBniButton: {
+      padding: 8,
+      backgroundColor: '#E8F5E9',
+      borderRadius: 12,
+      marginLeft: 8,
+      height: 28,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
   });
 
   return (
@@ -253,18 +294,6 @@ export default function DashboardV2() {
             <div></div>
           </View>
         </Surface>
-
-        {/* BNI Members Button - only show if BNI is connected */}
-        {isBniConnected && availablePartners.length > 0 && (
-          <Button
-            mode="contained"
-            icon="account-group"
-            onPress={handleGoToBniMembers}
-            style={styles.bniMembersButton}
-          >
-            View BNI Chapter Members
-          </Button>
-        )}
 
         {/* Scoreboard */}
         <Surface style={[styles.section, { backgroundColor: theme.colors.surface }]} elevation={1}>
@@ -302,6 +331,14 @@ export default function DashboardV2() {
         <Surface style={[styles.section, { backgroundColor: theme.colors.surface }]} elevation={1}>
           <View style={styles.sectionHeader}>
             <Text variant="titleLarge" style={{ color: theme.colors.onSurface }}>Referral Opportunities</Text>
+            {isFacebookConnected && isLoggedIn && (
+              <View style={styles.facebookConnectedBadge}>
+                <Ionicons name="logo-facebook" size={16} color="#1877F2" style={styles.facebookIcon} />
+                <Text variant="labelSmall" style={styles.facebookConnectedText}>
+                  Connected
+                </Text>
+              </View>
+            )}
           </View>
 
           {!isFacebookConnected ? (
@@ -348,15 +385,6 @@ export default function DashboardV2() {
             </Card>
           ) : (
             <>
-              {isFacebookConnected && isLoggedIn && (
-                <Card style={styles.welcomeCard}>
-                  <Card.Content>
-                    <Text variant="bodyLarge" style={styles.welcomeMessage}>
-                      Facebook connected! Showing referral opportunities from your Facebook groups.
-                    </Text>
-                  </Card.Content>
-                </Card>
-              )}
               {availableOpportunities.map((post) => (
                 <TouchableRipple key={post.id} onPress={() => navigate.push('DETAILS', { id: post.id })}>
                   <Card style={styles.postCard} mode="outlined">
@@ -404,9 +432,29 @@ export default function DashboardV2() {
         <Surface style={[styles.section, styles.lastSection, { backgroundColor: theme.colors.surface }]} elevation={1}>
           <View style={styles.sectionHeader}>
             <Text variant="titleLarge" style={{ color: theme.colors.onSurface }}>Referral Partners</Text>
-            <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-              {isBniConnected ? `${getUsedSlots()}/${maxPartners}` : '0/0'}
-            </Text>
+            {isBniConnected ? (
+              <View style={styles.bniConnectedContainer}>
+                <View style={styles.bniConnectedBadge}>
+                  <Ionicons name="briefcase" size={16} color="#003767" style={styles.bniIcon} />
+                  <Text variant="labelSmall" style={styles.bniConnectedText}>
+                    Connected ({getUsedSlots()}/{maxPartners})
+                  </Text>
+                </View>
+                {availablePartners.length > 0 && (
+                  <TouchableRipple 
+                    onPress={handleGoToBniMembers} 
+                    style={styles.viewBniButton}
+                    borderless
+                  >
+                    <Ionicons name="search" size={16} color="#003767" />
+                  </TouchableRipple>
+                )}
+              </View>
+            ) : (
+              <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+                0/0
+              </Text>
+            )}
           </View>
 
           {!isBniConnected ? (
@@ -430,15 +478,6 @@ export default function DashboardV2() {
             </Card>
           ) : (
             <>
-              {isBniConnected && (
-                <Card style={[styles.welcomeCard, {backgroundColor: '#E8F5E9'}]}>
-                  <Card.Content>
-                    <Text variant="bodyLarge" style={[styles.welcomeMessage, {color: '#003767'}]}>
-                      BNI connected! Showing referral partners from your BNI chapter.
-                    </Text>
-                  </Card.Content>
-                </Card>
-              )}
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.partnersScroll}>
                 {availablePartners.map((partner) => (
                   <Card key={partner.id} style={styles.partnerCard} mode="outlined">

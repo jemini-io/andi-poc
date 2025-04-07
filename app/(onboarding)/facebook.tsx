@@ -4,7 +4,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme, Text, TextInput, Button, Surface } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useProfileStore } from '../../store/profile';
-import { usePostsStore } from '../../store/posts';
 import { navigate } from '../navigation';
 
 export default function FacebookConnect() {
@@ -12,8 +11,6 @@ export default function FacebookConnect() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const updateProfile = useProfileStore(state => state.updateProfile);
-  const posts = usePostsStore(state => state.posts);
-  const setPosts = usePostsStore(state => state.setPosts);
 
   // Animation values using useRef
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -46,27 +43,8 @@ export default function FacebookConnect() {
         }
       });
       
-      // Activate all Facebook posts for the Referral Opportunities tab
-      // In a real app, this would fetch actual Facebook posts via API
-      if (posts) {
-        // Mark all Facebook posts as available
-        const updatedPosts = posts.map(post => {
-          if (post.source === 'facebook') {
-            return {
-              ...post,
-              available: true // Explicitly set to true for Facebook posts
-            };
-          }
-          return post;
-        });
-        
-        // Save the updated posts to the store
-        setPosts(updatedPosts);
-        
-        console.log('Facebook connected! Enabled', updatedPosts.filter(p => p.available === true).length, 'posts.');
-      }
-      
-      // Navigate to Facebook Groups selection page instead of dashboard
+      // Navigate to Facebook Groups selection page
+      // The Referral Opportunities will be populated there after group selection
       navigate.replace('FACEBOOK_GROUPS');
     }
   };

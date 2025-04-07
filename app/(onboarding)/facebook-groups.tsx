@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme, Text, Surface, Card, Button, ActivityIndicator, Checkbox } from 'react-native-paper';
 import { useProfileStore } from '../../store/profile';
+import { usePostsStore } from '../../store/posts';
 import { navigate } from '../navigation';
 
 // Facebook Groups data
@@ -132,19 +133,37 @@ export default function FacebookGroups() {
       }
     });
     
+    // Activate all Facebook posts for the Referral Opportunities tab
+    // In a real app, this would fetch actual Facebook posts via API
+    const posts = usePostsStore.getState().posts;
+    const setPosts = usePostsStore.getState().setPosts;
+    
+    if (posts) {
+      // Mark all Facebook posts as available
+      const updatedPosts = posts.map(post => {
+        if (post.source === 'facebook') {
+          return {
+            ...post,
+            available: true // Explicitly set to true for Facebook posts
+          };
+        }
+        return post;
+      });
+      
+      // Save the updated posts to the store
+      setPosts(updatedPosts);
+      
+      console.log('Facebook connected! Enabled', updatedPosts.filter(p => p.available === true).length, 'posts.');
+    }
+    
     console.log(`Facebook groups selected: ${selectedGroupIds.length}`);
     
     // Navigate to dashboard
     navigate.replace('DASHBOARD');
   };
 
-  const handleSkip = () => {
-    // Skip to dashboard directly
-    navigate.replace('DASHBOARD');
-  };
-
-  const handleSkipToDashboard = () => {
-    // Skip to dashboard directly
+  const handleCancel = () => {
+    // Return to dashboard without making any changes
     navigate.replace('DASHBOARD');
   };
 
@@ -237,7 +256,7 @@ export default function FacebookGroups() {
       flex: 1,
       marginRight: 8,
     },
-    skipButton: {
+    cancelButton: {
       marginLeft: 8,
     },
     buttonText: {
@@ -246,10 +265,6 @@ export default function FacebookGroups() {
     },
     animatedContent: {
       flex: 1,
-    },
-    skipToDashboardButton: {
-      marginTop: 8,
-      alignSelf: 'center',
     },
   });
 
@@ -344,21 +359,13 @@ export default function FacebookGroups() {
         
         <Button
           mode="outlined"
-          onPress={handleSkip}
-          style={styles.skipButton}
+          onPress={handleCancel}
+          style={styles.cancelButton}
           labelStyle={styles.buttonText}
         >
-          Skip & Finish
+          Cancel
         </Button>
       </Surface>
-      
-      <Button
-        mode="text"
-        onPress={handleSkipToDashboard}
-        style={styles.skipToDashboardButton}
-      >
-        Skip to Dashboard
-      </Button>
     </LinearGradient>
   );
 } 
