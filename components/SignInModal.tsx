@@ -3,6 +3,7 @@ import { View, StyleSheet, Modal, TouchableOpacity, TouchableWithoutFeedback } f
 import { Surface, Text, Button, useTheme } from 'react-native-paper';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { navigate } from '../app/navigation';
 
 interface SignInModalProps {
   visible: boolean;
@@ -14,17 +15,17 @@ export default function SignInModal({ visible, onDismiss }: SignInModalProps) {
 
   const handleEmailSignIn = () => {
     onDismiss();
-    router.push('/email');
+    navigate.push('EMAIL');
   };
 
   const handleFacebookConnect = () => {
     onDismiss();
-    router.push('/(onboarding)/facebook');
+    navigate.push('FACEBOOK');
   };
 
   const handleBNIConnect = () => {
     onDismiss();
-    router.push('/(onboarding)/bni');
+    navigate.push('BNI');
   };
 
   return (

@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme, Text, TextInput, Button, Surface } from 'react-native-paper';
 import { useProfileStore } from '../store/profile';
+import { navigate } from './navigation';
 
 export default function EmailSignUp() {
   const theme = useTheme();
@@ -39,7 +40,7 @@ export default function EmailSignUp() {
         name: email.split('@')[0].replace(/\./g, ' ').replace(/^(.)|\s+(.)/g, c => c.toUpperCase()),
       });
     }
-    router.replace('/(onboarding)/facebook');
+    navigate.replace('FACEBOOK');
   };
 
   const handleSkipToApp = () => {
@@ -50,11 +51,11 @@ export default function EmailSignUp() {
         name: email.split('@')[0].replace(/\./g, ' ').replace(/^(.)|\s+(.)/g, c => c.toUpperCase()),
       });
     }
-    router.replace('/(app)/dashboard-v2');
+    navigate.replace('DASHBOARD');
   };
 
   const handleCancel = () => {
-    router.back();
+    navigate.back();
   };
 
   return (
@@ -102,7 +103,7 @@ export default function EmailSignUp() {
               labelStyle={styles.buttonText}
               disabled={!email}
             >
-              Continue to Connect Sources
+              Continue to Facebook
             </Button>
             
             <Button

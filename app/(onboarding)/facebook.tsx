@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme, Text, TextInput, Button, Surface } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useProfileStore } from '../../store/profile';
+import { navigate } from '../navigation';
 
 export default function FacebookConnect() {
   const theme = useTheme();
@@ -43,18 +44,18 @@ export default function FacebookConnect() {
         }
       });
       
-      router.replace('/bni');
+      navigate.replace('FACEBOOK_GROUPS');
     }
   };
 
   const handleSkip = () => {
-    // Skip Facebook but continue to BNI
-    router.replace('/bni');
+    // Skip Facebook but go directly to Facebook Groups page
+    navigate.replace('FACEBOOK_GROUPS');
   };
 
   const handleSkipToApp = () => {
     // Skip all remaining onboarding and go straight to the app
-    router.replace('/(app)/dashboard-v2');
+    navigate.replace('DASHBOARD');
   };
 
   return (

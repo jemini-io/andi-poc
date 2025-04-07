@@ -10,6 +10,7 @@ import { useProfileStore } from '../../store/profile';
 import { useFonts } from 'expo-font';
 import { useState } from 'react';
 import SignInModal from '../../components/SignInModal';
+import { Routes, navigate } from '../navigation';
 
 export default function DashboardV2() {
   const theme = useTheme();
@@ -68,6 +69,12 @@ export default function DashboardV2() {
   }
 
   const isLoggedIn = profile.email !== 'pat@example.com'; // Simple check for demo purposes
+  // Check if user is connected to BNI
+  const isBniConnected = profile.business === 'BNI Member Business';
+
+  const handleGoToBniMembers = () => {
+    navigate.push('BNI_MEMBERS');
+  };
 
   const styles = StyleSheet.create({
     container: {
@@ -184,6 +191,12 @@ export default function DashboardV2() {
     signInButton: {
       marginTop: 10,
     },
+    bniMembersButton: {
+      marginTop: 10,
+      marginHorizontal: 20,
+      marginBottom: 20,
+      backgroundColor: '#003767',
+    },
   });
 
   return (
@@ -217,6 +230,18 @@ export default function DashboardV2() {
             <div></div>
           </View>
         </Surface>
+
+        {/* BNI Members Button - only show if BNI is connected */}
+        {isBniConnected && (
+          <Button
+            mode="contained"
+            icon="account-group"
+            onPress={handleGoToBniMembers}
+            style={styles.bniMembersButton}
+          >
+            View BNI Chapter Members
+          </Button>
+        )}
 
         {/* Scoreboard */}
         <Surface style={[styles.section, { backgroundColor: theme.colors.surface }]} elevation={1}>
@@ -260,10 +285,20 @@ export default function DashboardV2() {
             <Card style={styles.emptyCard}>
               <Card.Content>
                 <Text variant="bodyLarge" style={styles.signInMessage}>
-                  Sign in to see referral opportunities and connect with potential partners.
+                  Sign in with Facebook to access referral opportunities.
                 </Text>
-                <Button mode="contained" onPress={() => setSignInModalVisible(true)} style={styles.signInButton}>
-                  Sign In
+                <Button 
+                  mode="contained" 
+                  onPress={() => {
+                    navigate.push('FACEBOOK');
+                  }}
+                  style={styles.signInButton}
+                  icon={({ size, color }) => (
+                    <Ionicons name="logo-facebook" size={size} color={color} />
+                  )}
+                  buttonColor="#1877F2"
+                >
+                  Sign in with Facebook
                 </Button>
               </Card.Content>
             </Card>
@@ -277,45 +312,43 @@ export default function DashboardV2() {
             </Card>
           ) : (
             availableOpportunities.map((post) => (
-              <Link href={`/details?id=${post.id}` as any} asChild key={post.id}>
-                <TouchableRipple>
-                  <Card style={styles.postCard} mode="outlined">
-                    <Card.Content>
-                      <View style={styles.postHeader}>
-                        <View style={styles.sourceIconContainer}>
-                          <Ionicons name={getSourceIcon(post.source)} size={24} color={theme.colors.primary} />
-                        </View>
-                        <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>{post.timestamp}</Text>
+              <TouchableRipple key={post.id} onPress={() => navigate.push('DETAILS', { id: post.id })}>
+                <Card style={styles.postCard} mode="outlined">
+                  <Card.Content>
+                    <View style={styles.postHeader}>
+                      <View style={styles.sourceIconContainer}>
+                        <Ionicons name={getSourceIcon(post.source)} size={24} color={theme.colors.primary} />
                       </View>
-                      
-                      <Text variant="bodyLarge" numberOfLines={2} style={{ color: theme.colors.onSurface }}>
-                        {post.content}
-                      </Text>
-                      
-                      <View style={styles.postStats}>
-                        <View style={styles.stat}>
-                          <Ionicons name="heart-outline" size={16} color={theme.colors.onSurfaceVariant} />
-                          <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant, marginLeft: 4 }}>
-                            {post.likes}
-                          </Text>
-                        </View>
-                        <View style={styles.stat}>
-                          <Ionicons name="chatbubble-outline" size={16} color={theme.colors.onSurfaceVariant} />
-                          <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant, marginLeft: 4 }}>
-                            {post.comments}
-                          </Text>
-                        </View>
-                        <View style={styles.stat}>
-                          <Ionicons name="share-outline" size={16} color={theme.colors.onSurfaceVariant} />
-                          <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant, marginLeft: 4 }}>
-                            {post.shares}
-                          </Text>
-                        </View>
+                      <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>{post.timestamp}</Text>
+                    </View>
+                    
+                    <Text variant="bodyLarge" numberOfLines={2} style={{ color: theme.colors.onSurface }}>
+                      {post.content}
+                    </Text>
+                    
+                    <View style={styles.postStats}>
+                      <View style={styles.stat}>
+                        <Ionicons name="heart-outline" size={16} color={theme.colors.onSurfaceVariant} />
+                        <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant, marginLeft: 4 }}>
+                          {post.likes}
+                        </Text>
                       </View>
-                    </Card.Content>
-                  </Card>
-                </TouchableRipple>
-              </Link>
+                      <View style={styles.stat}>
+                        <Ionicons name="chatbubble-outline" size={16} color={theme.colors.onSurfaceVariant} />
+                        <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant, marginLeft: 4 }}>
+                          {post.comments}
+                        </Text>
+                      </View>
+                      <View style={styles.stat}>
+                        <Ionicons name="share-outline" size={16} color={theme.colors.onSurfaceVariant} />
+                        <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant, marginLeft: 4 }}>
+                          {post.shares}
+                        </Text>
+                      </View>
+                    </View>
+                  </Card.Content>
+                </Card>
+              </TouchableRipple>
             ))
           )}
         </Surface>
@@ -333,10 +366,18 @@ export default function DashboardV2() {
             <Card style={styles.emptyCard}>
               <Card.Content>
                 <Text variant="bodyLarge" style={styles.signInMessage}>
-                  Sign in to connect with referral partners and grow your network.
+                  Sign in with BNI to connect with referral partners and grow your network.
                 </Text>
-                <Button mode="contained" onPress={() => setSignInModalVisible(true)} style={styles.signInButton}>
-                  Sign In
+                <Button 
+                  mode="contained" 
+                  onPress={() => {
+                    navigate.push('BNI');
+                  }}
+                  style={styles.signInButton}
+                  icon="briefcase"
+                  buttonColor="#003767"
+                >
+                  Sign in with BNI
                 </Button>
               </Card.Content>
             </Card>

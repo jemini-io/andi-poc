@@ -5,12 +5,15 @@ import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme, Text, TextInput, Button, Surface } from 'react-native-paper';
 import { useProfileStore } from '../../store/profile';
+import { navigate } from '../navigation';
 
 export default function BNIConnect() {
   const theme = useTheme();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const updateProfile = useProfileStore(state => state.updateProfile);
+  const profile = useProfileStore(state => state.profile);
+  const [connecting, setConnecting] = useState(false);
 
   // Animation values for fade and slide effects
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -34,26 +37,31 @@ export default function BNIConnect() {
     ]).start();
   }, []);
 
-  // Navigate to sources connection screen
-  const handleConnect = () => {
-    // Update profile with BNI membership info
+  const handleConnect = async () => {
+    setConnecting(true);
+
+    // Simulating API connection delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    // Using a simplified approach to update the profile
     updateProfile({
       business: 'BNI Member Business',
       website: 'www.bnimember.com',
       phone: '(425) 555-6789'
     });
-    
-    router.replace('/connect-sources' as any);
+
+    setConnecting(false);
+    navigate.push('BNI_MEMBERS');
   };
 
   const handleSkip = () => {
-    // Skip BNI but continue to connect-sources
-    router.replace('/connect-sources' as any);
+    // Skip BNI but go directly to BNI Members page
+    navigate.replace('BNI_MEMBERS');
   };
 
   const handleSkipToApp = () => {
     // Skip all remaining onboarding and go straight to the app
-    router.replace('/(app)/dashboard-v2');
+    navigate.replace('DASHBOARD');
   };
 
   return (
