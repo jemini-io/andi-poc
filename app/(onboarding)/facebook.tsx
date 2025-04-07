@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet, Image, Animated } from 'react-native';
-import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme, Text, TextInput, Button, Surface } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useProfileStore } from '../../store/profile';
+import { usePostsStore } from '../../store/posts';
 import { navigate } from '../navigation';
 
 export default function FacebookConnect() {
@@ -12,6 +12,8 @@ export default function FacebookConnect() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const updateProfile = useProfileStore(state => state.updateProfile);
+  const posts = usePostsStore(state => state.posts);
+  const setPosts = usePostsStore(state => state.setPosts);
 
   // Animation values using useRef
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -44,17 +46,33 @@ export default function FacebookConnect() {
         }
       });
       
+      // Activate all Facebook posts for the Referral Opportunities tab
+      // In a real app, this would fetch actual Facebook posts via API
+      if (posts) {
+        // Mark all Facebook posts as available
+        const updatedPosts = posts.map(post => {
+          if (post.source === 'facebook') {
+            return {
+              ...post,
+              available: true // Explicitly set to true for Facebook posts
+            };
+          }
+          return post;
+        });
+        
+        // Save the updated posts to the store
+        setPosts(updatedPosts);
+        
+        console.log('Facebook connected! Enabled', updatedPosts.filter(p => p.available === true).length, 'posts.');
+      }
+      
+      // Navigate to Facebook Groups selection page instead of dashboard
       navigate.replace('FACEBOOK_GROUPS');
     }
   };
 
-  const handleSkip = () => {
-    // Skip Facebook but go directly to Facebook Groups page
-    navigate.replace('FACEBOOK_GROUPS');
-  };
-
-  const handleSkipToApp = () => {
-    // Skip all remaining onboarding and go straight to the app
+  const handleCancel = () => {
+    // Return to dashboard without changing anything
     navigate.replace('DASHBOARD');
   };
 
@@ -122,18 +140,10 @@ export default function FacebookConnect() {
 
             <Button
               mode="outlined"
-              onPress={handleSkip}
-              style={styles.skipButton}
+              onPress={handleCancel}
+              style={styles.cancelButton}
             >
-              Skip Facebook
-            </Button>
-
-            <Button
-              mode="text"
-              onPress={handleSkipToApp}
-              style={styles.skipToAppButton}
-            >
-              Skip to Dashboard
+              Cancel
             </Button>
           </Surface>
 
@@ -192,17 +202,13 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     flexDirection: 'row-reverse',
   },
+  cancelButton: {
+    marginTop: 12,
+    borderColor: '#fff',
+  },
   privacyText: {
     color: 'rgba(255, 255, 255, 0.7)',
     textAlign: 'center',
     marginTop: 20,
-  },
-  skipButton: {
-    marginTop: 12,
-    backgroundColor: 'transparent',
-    borderColor: '#1877F2',
-  },
-  skipToAppButton: {
-    marginTop: 8,
   },
 });

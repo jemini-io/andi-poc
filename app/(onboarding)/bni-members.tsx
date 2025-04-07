@@ -91,7 +91,7 @@ export default function BniMembers() {
   // BNI Members state
   const [loadedMembers, setLoadedMembers] = useState<Partner[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(true);
-  const { setPartners } = usePartnersStore();
+  const { setPartners, clearPartners } = usePartnersStore();
   const profile = useProfileStore(state => state.profile);
   const updateProfile = useProfileStore(state => state.updateProfile);
 
@@ -128,16 +128,30 @@ export default function BniMembers() {
   }, []);
 
   const loadContent = () => {
+    clearPartners();
+    
     // Load BNI members gradually
     let currentMember = 0;
     const memberInterval = setInterval(() => {
       if (currentMember < BNI_MEMBERS.length) {
-        setLoadedMembers(prev => [...prev, BNI_MEMBERS[currentMember]]);
+        // Create a new member with 'available' set to true
+        const newMember = {
+          ...BNI_MEMBERS[currentMember],
+          available: true
+        };
+        
+        setLoadedMembers(prev => [...prev, newMember]);
         currentMember++;
       } else {
         clearInterval(memberInterval);
         setLoadingMembers(false);
-        setPartners(BNI_MEMBERS);
+        
+        // Save all partners to the store with 'available' set to true
+        const availableMembers = BNI_MEMBERS.map(member => ({
+          ...member,
+          available: true
+        }));
+        setPartners(availableMembers);
       }
     }, 800);
   };

@@ -16,6 +16,7 @@ export interface Partner {
     facebook?: string;
     instagram?: string;
   };
+  available?: boolean; // Whether this partner is visible based on BNI connection
 }
 
 // Initial partners data
@@ -33,7 +34,8 @@ const INITIAL_PARTNERS: Partner[] = [
     social: {
       linkedin: 'linkedin.com/in/sarahchen',
       facebook: 'facebook.com/evergreenfinancial'
-    }
+    },
+    available: false
   },
   {
     id: '2',
@@ -48,7 +50,8 @@ const INITIAL_PARTNERS: Partner[] = [
     social: {
       linkedin: 'linkedin.com/in/michaelrodriguez',
       facebook: 'facebook.com/eliterealestate'
-    }
+    },
+    available: false
   },
   {
     id: '3',
@@ -63,7 +66,8 @@ const INITIAL_PARTNERS: Partner[] = [
     social: {
       instagram: 'instagram.com/brightsmile',
       facebook: 'facebook.com/brightsmile'
-    }
+    },
+    available: false
   },
   {
     id: '4',
@@ -78,7 +82,8 @@ const INITIAL_PARTNERS: Partner[] = [
     social: {
       linkedin: 'linkedin.com/in/davidthompson',
       facebook: 'facebook.com/thompsonlaw'
-    }
+    },
+    available: false
   },
   {
     id: '5',
@@ -93,7 +98,8 @@ const INITIAL_PARTNERS: Partner[] = [
     social: {
       instagram: 'instagram.com/digitalmktg',
       linkedin: 'linkedin.com/in/lisamartinez'
-    }
+    },
+    available: false
   }
 ];
 

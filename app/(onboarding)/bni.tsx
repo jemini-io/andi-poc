@@ -5,15 +5,19 @@ import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme, Text, TextInput, Button, Surface } from 'react-native-paper';
 import { useProfileStore } from '../../store/profile';
+import { usePartnersStore } from '../../store/partners';
 import { navigate } from '../navigation';
 
 export default function BNIConnect() {
   const theme = useTheme();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [connecting, setConnecting] = useState(false);
   const updateProfile = useProfileStore(state => state.updateProfile);
   const profile = useProfileStore(state => state.profile);
-  const [connecting, setConnecting] = useState(false);
+  
+  const partners = usePartnersStore(state => state.partners);
+  const setPartners = usePartnersStore(state => state.setPartners);
 
   // Animation values for fade and slide effects
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -49,18 +53,27 @@ export default function BNIConnect() {
       website: 'www.bnimember.com',
       phone: '(425) 555-6789'
     });
+    
+    // Activate all BNI partners
+    if (partners) {
+      // Mark all partners as available after BNI connection
+      const updatedPartners = partners.map(partner => ({
+        ...partner,
+        available: true
+      }));
+      
+      // Save the updated partners to the store
+      setPartners(updatedPartners);
+      
+      console.log('BNI connected! Showing', updatedPartners.length, 'referral partners.');
+    }
 
     setConnecting(false);
     navigate.push('BNI_MEMBERS');
   };
 
-  const handleSkip = () => {
-    // Skip BNI but go directly to BNI Members page
-    navigate.replace('BNI_MEMBERS');
-  };
-
-  const handleSkipToApp = () => {
-    // Skip all remaining onboarding and go straight to the app
+  const handleCancel = () => {
+    // Return to dashboard without making any changes
     navigate.replace('DASHBOARD');
   };
 
@@ -117,25 +130,19 @@ export default function BNIConnect() {
               onPress={handleConnect}
               style={styles.button}
               labelStyle={styles.buttonText}
-              disabled={!username || !password}
+              loading={connecting}
+              disabled={!username || !password || connecting}
             >
               Connect BNI
             </Button>
             
             <Button
               mode="outlined"
-              onPress={handleSkip}
-              style={styles.skipButton}
+              onPress={handleCancel}
+              style={styles.cancelButton}
+              disabled={connecting}
             >
-              Skip BNI Connect
-            </Button>
-
-            <Button
-              mode="text"
-              onPress={handleSkipToApp}
-              style={styles.skipToAppButton}
-            >
-              Skip to Dashboard
+              Cancel
             </Button>
           </Surface>
         </Animated.View>
@@ -190,10 +197,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
   },
-  skipButton: {
+  cancelButton: {
     marginTop: 12,
-  },
-  skipToAppButton: {
-    marginTop: 8,
   },
 });

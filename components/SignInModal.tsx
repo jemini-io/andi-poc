@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Modal, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
 import { Surface, Text, Button, useTheme } from 'react-native-paper';
-import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { navigate } from '../app/navigation';
 
@@ -12,11 +11,6 @@ interface SignInModalProps {
 
 export default function SignInModal({ visible, onDismiss }: SignInModalProps) {
   const theme = useTheme();
-
-  const handleEmailSignIn = () => {
-    onDismiss();
-    navigate.push('EMAIL');
-  };
 
   const handleFacebookConnect = () => {
     onDismiss();
@@ -44,21 +38,11 @@ export default function SignInModal({ visible, onDismiss }: SignInModalProps) {
               </TouchableOpacity>
               
               <Text variant="headlineSmall" style={[styles.title, { color: theme.colors.onSurface }]}>
-                Sign In or Connect
+                Connect Your Sources
               </Text>
               <Text variant="bodyMedium" style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}>
-                Choose how you'd like to proceed
+                Choose which platform to connect
               </Text>
-              
-              <Button
-                mode="contained"
-                icon="email"
-                onPress={handleEmailSignIn}
-                style={[styles.button, { backgroundColor: theme.colors.primary }]}
-                contentStyle={styles.buttonContent}
-              >
-                Sign In With Email
-              </Button>
               
               <Button
                 mode="contained"

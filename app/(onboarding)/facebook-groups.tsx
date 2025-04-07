@@ -119,25 +119,22 @@ export default function FacebookGroups() {
   };
 
   const handleContinue = () => {
-    // Save selected groups - store in localStorage or session since Profile type doesn't have facebookGroups
+    // Save selected groups to profile
     const selectedGroupIds = Array.from(selectedGroups);
     // Get the actual selected group objects
     const selectedGroupObjects = GROUPS.filter(group => selectedGroupIds.includes(group.id));
     
-    // Just update basic profile info
+    // Update profile with selected Facebook groups
     updateProfile({
-      ...profile
+      social: {
+        ...profile.social,
+        facebookGroups: selectedGroupIds
+      }
     });
     
-    // Instead of storing in profile, we can handle this differently in a real app
-    // For example by storing in localStorage or a different store
-    try {
-      localStorage.setItem('selectedFacebookGroups', JSON.stringify(selectedGroupObjects));
-    } catch (e) {
-      console.log('Unable to store selected groups');
-    }
+    console.log(`Facebook groups selected: ${selectedGroupIds.length}`);
     
-    // Navigate to dashboard directly instead of BNI Members
+    // Navigate to dashboard
     navigate.replace('DASHBOARD');
   };
 
@@ -159,6 +156,12 @@ export default function FacebookGroups() {
     content: {
       flex: 1,
       padding: 20,
+    },
+    fbImage: {
+      width: 80,
+      height: 80,
+      marginBottom: 20,
+      alignSelf: 'center',
     },
     title: {
       color: '#fff',
@@ -263,6 +266,12 @@ export default function FacebookGroups() {
             transform: [{ translateX: slideAnim }],
           }
         ]}>
+          <Image
+            source={require('./fbicon.png')}
+            style={styles.fbImage}
+            resizeMode="contain"
+          />
+          
           <Text variant="displaySmall" style={styles.title}>Facebook Groups</Text>
           <Text variant="titleMedium" style={styles.subtitle}>
             Select which groups you want Andi to monitor for opportunities

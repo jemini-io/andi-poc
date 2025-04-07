@@ -1,3 +1,4 @@
+import React from 'react';
 import { View, StyleSheet, ScrollView, Image, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Link, useRouter } from 'expo-router';
@@ -21,16 +22,36 @@ export default function DashboardV2() {
   const [signInModalVisible, setSignInModalVisible] = useState(false);
   
   const partners = usePartnersStore(state => state.partners);
+  const availablePartners = partners.filter(partner => partner.available === true);
   const posts = usePostsStore(state => state.posts);
   const hasReferral = useStatsStore(state => state.hasReferral);
+  const { maxPartners, getUsedSlots } = usePartnersStore();
+  const profile = useProfileStore(state => state.profile);
   
   const referralsReceived = useReceivedReferralsStore(state => state.getTotalReceived());
   const { referralsGiven, getOpportunities } = useStatsStore();
   const opportunities = getOpportunities();
 
-  // Filter out posts that already have referrals
+  const isLoggedIn = profile.email !== 'pat@example.com'; // Simple check for demo purposes
+  // Check if user is connected to BNI
+  const isBniConnected = profile.business === 'BNI Member Business';
+  // Check if user is connected to Facebook
+  const isFacebookConnected = profile.social?.facebook !== undefined;
+
+  // Filter out posts that already have referrals and show only Facebook posts if connected to Facebook
   const availableOpportunities = posts
-    .filter(post => !hasReferral(post.id))
+    .filter(post => {
+      // Only show posts if connected to Facebook
+      if (!isFacebookConnected) {
+        return false;
+      }
+      
+      // Filter by non-referred posts and availability
+      const notReferred = !hasReferral(post.id);
+      
+      // Only show Facebook posts that are marked as available
+      return notReferred && post.source === 'facebook' && post.available === true;
+    })
     .sort((a, b) => {
       // Convert relative timestamps to comparable values
       const getTimeValue = (timestamp: string) => {
@@ -57,9 +78,6 @@ export default function DashboardV2() {
     }
   };
 
-  const { maxPartners, getUsedSlots } = usePartnersStore();
-  const profile = useProfileStore(state => state.profile);
-
   const [fontsLoaded] = useFonts({
     'DancingScript': require('../../assets/fonts/DancingScript-Bold.ttf'),
   });
@@ -67,10 +85,6 @@ export default function DashboardV2() {
   if (!fontsLoaded) {
     return null;
   }
-
-  const isLoggedIn = profile.email !== 'pat@example.com'; // Simple check for demo purposes
-  // Check if user is connected to BNI
-  const isBniConnected = profile.business === 'BNI Member Business';
 
   const handleGoToBniMembers = () => {
     navigate.push('BNI_MEMBERS');
@@ -197,6 +211,15 @@ export default function DashboardV2() {
       marginBottom: 20,
       backgroundColor: '#003767',
     },
+    welcomeCard: {
+      marginHorizontal: 20,
+      marginBottom: 15,
+      backgroundColor: '#E3F2FD',
+    },
+    welcomeMessage: {
+      textAlign: 'center',
+      color: '#1877F2',
+    },
   });
 
   return (
@@ -232,7 +255,7 @@ export default function DashboardV2() {
         </Surface>
 
         {/* BNI Members Button - only show if BNI is connected */}
-        {isBniConnected && (
+        {isBniConnected && availablePartners.length > 0 && (
           <Button
             mode="contained"
             icon="account-group"
@@ -281,7 +304,7 @@ export default function DashboardV2() {
             <Text variant="titleLarge" style={{ color: theme.colors.onSurface }}>Referral Opportunities</Text>
           </View>
 
-          {!isLoggedIn ? (
+          {!isFacebookConnected ? (
             <Card style={styles.emptyCard}>
               <Card.Content>
                 <Text variant="bodyLarge" style={styles.signInMessage}>
@@ -306,50 +329,74 @@ export default function DashboardV2() {
             <Card style={styles.emptyCard}>
               <Card.Content>
                 <Text variant="bodyLarge" style={{ textAlign: 'center', color: theme.colors.onSurfaceVariant }}>
-                  No new referral opportunities available.
+                  No referral opportunities available. Connect to Facebook to access more features!
                 </Text>
+                <Button 
+                  mode="contained" 
+                  onPress={() => {
+                    navigate.push('FACEBOOK');
+                  }}
+                  style={styles.signInButton}
+                  icon={({ size, color }) => (
+                    <Ionicons name="logo-facebook" size={size} color={color} />
+                  )}
+                  buttonColor="#1877F2"
+                >
+                  Connect to Facebook
+                </Button>
               </Card.Content>
             </Card>
           ) : (
-            availableOpportunities.map((post) => (
-              <TouchableRipple key={post.id} onPress={() => navigate.push('DETAILS', { id: post.id })}>
-                <Card style={styles.postCard} mode="outlined">
+            <>
+              {isFacebookConnected && isLoggedIn && (
+                <Card style={styles.welcomeCard}>
                   <Card.Content>
-                    <View style={styles.postHeader}>
-                      <View style={styles.sourceIconContainer}>
-                        <Ionicons name={getSourceIcon(post.source)} size={24} color={theme.colors.primary} />
-                      </View>
-                      <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>{post.timestamp}</Text>
-                    </View>
-                    
-                    <Text variant="bodyLarge" numberOfLines={2} style={{ color: theme.colors.onSurface }}>
-                      {post.content}
+                    <Text variant="bodyLarge" style={styles.welcomeMessage}>
+                      Facebook connected! Showing referral opportunities from your Facebook groups.
                     </Text>
-                    
-                    <View style={styles.postStats}>
-                      <View style={styles.stat}>
-                        <Ionicons name="heart-outline" size={16} color={theme.colors.onSurfaceVariant} />
-                        <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant, marginLeft: 4 }}>
-                          {post.likes}
-                        </Text>
-                      </View>
-                      <View style={styles.stat}>
-                        <Ionicons name="chatbubble-outline" size={16} color={theme.colors.onSurfaceVariant} />
-                        <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant, marginLeft: 4 }}>
-                          {post.comments}
-                        </Text>
-                      </View>
-                      <View style={styles.stat}>
-                        <Ionicons name="share-outline" size={16} color={theme.colors.onSurfaceVariant} />
-                        <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant, marginLeft: 4 }}>
-                          {post.shares}
-                        </Text>
-                      </View>
-                    </View>
                   </Card.Content>
                 </Card>
-              </TouchableRipple>
-            ))
+              )}
+              {availableOpportunities.map((post) => (
+                <TouchableRipple key={post.id} onPress={() => navigate.push('DETAILS', { id: post.id })}>
+                  <Card style={styles.postCard} mode="outlined">
+                    <Card.Content>
+                      <View style={styles.postHeader}>
+                        <View style={styles.sourceIconContainer}>
+                          <Ionicons name={getSourceIcon(post.source)} size={24} color={theme.colors.primary} />
+                        </View>
+                        <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>{post.timestamp}</Text>
+                      </View>
+                      
+                      <Text variant="bodyLarge" numberOfLines={2} style={{ color: theme.colors.onSurface }}>
+                        {post.content}
+                      </Text>
+                      
+                      <View style={styles.postStats}>
+                        <View style={styles.stat}>
+                          <Ionicons name="heart-outline" size={16} color={theme.colors.onSurfaceVariant} />
+                          <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant, marginLeft: 4 }}>
+                            {post.likes}
+                          </Text>
+                        </View>
+                        <View style={styles.stat}>
+                          <Ionicons name="chatbubble-outline" size={16} color={theme.colors.onSurfaceVariant} />
+                          <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant, marginLeft: 4 }}>
+                            {post.comments}
+                          </Text>
+                        </View>
+                        <View style={styles.stat}>
+                          <Ionicons name="share-outline" size={16} color={theme.colors.onSurfaceVariant} />
+                          <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant, marginLeft: 4 }}>
+                            {post.shares}
+                          </Text>
+                        </View>
+                      </View>
+                    </Card.Content>
+                  </Card>
+                </TouchableRipple>
+              ))}
+            </>
           )}
         </Surface>
 
@@ -358,11 +405,11 @@ export default function DashboardV2() {
           <View style={styles.sectionHeader}>
             <Text variant="titleLarge" style={{ color: theme.colors.onSurface }}>Referral Partners</Text>
             <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-              {isLoggedIn ? `${getUsedSlots()}/${maxPartners}` : '0/0'}
+              {isBniConnected ? `${getUsedSlots()}/${maxPartners}` : '0/0'}
             </Text>
           </View>
 
-          {!isLoggedIn ? (
+          {!isBniConnected ? (
             <Card style={styles.emptyCard}>
               <Card.Content>
                 <Text variant="bodyLarge" style={styles.signInMessage}>
@@ -382,38 +429,49 @@ export default function DashboardV2() {
               </Card.Content>
             </Card>
           ) : (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.partnersScroll}>
-              {partners.map((partner) => (
-                <Card key={partner.id} style={styles.partnerCard} mode="outlined">
-                  <Card.Content style={styles.partnerCardContent}>
-                    <Image
-                      source={{ uri: partner.image }}
-                      style={styles.partnerImage}
-                    />
-                    <Text variant="titleMedium" style={[styles.partnerName, { color: theme.colors.onSurface }]}>
-                      {partner.name}
-                    </Text>
-                    <Text variant="bodySmall" style={[styles.partnerBusiness, { color: theme.colors.onSurfaceVariant }]}>
-                      {partner.business}
+            <>
+              {isBniConnected && (
+                <Card style={[styles.welcomeCard, {backgroundColor: '#E8F5E9'}]}>
+                  <Card.Content>
+                    <Text variant="bodyLarge" style={[styles.welcomeMessage, {color: '#003767'}]}>
+                      BNI connected! Showing referral partners from your BNI chapter.
                     </Text>
                   </Card.Content>
                 </Card>
-              ))}
-              <Link href="/add-partner" asChild>
-                <TouchableRipple>
-                  <Card style={[styles.partnerCard, styles.addPartnerCard]} mode="outlined">
+              )}
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.partnersScroll}>
+                {availablePartners.map((partner) => (
+                  <Card key={partner.id} style={styles.partnerCard} mode="outlined">
                     <Card.Content style={styles.partnerCardContent}>
-                      <View style={[styles.addPartnerCircle, { backgroundColor: theme.colors.primary }]}>
-                        <Ionicons name="add" size={32} color={theme.colors.onPrimary} />
-                      </View>
+                      <Image
+                        source={{ uri: partner.image }}
+                        style={styles.partnerImage}
+                      />
                       <Text variant="titleMedium" style={[styles.partnerName, { color: theme.colors.onSurface }]}>
-                        Add Partner
+                        {partner.name}
+                      </Text>
+                      <Text variant="bodySmall" style={[styles.partnerBusiness, { color: theme.colors.onSurfaceVariant }]}>
+                        {partner.business}
                       </Text>
                     </Card.Content>
                   </Card>
-                </TouchableRipple>
-              </Link>
-            </ScrollView>
+                ))}
+                <Link href="/add-partner" asChild>
+                  <TouchableRipple>
+                    <Card style={[styles.partnerCard, styles.addPartnerCard]} mode="outlined">
+                      <Card.Content style={styles.partnerCardContent}>
+                        <View style={[styles.addPartnerCircle, { backgroundColor: theme.colors.primary }]}>
+                          <Ionicons name="add" size={32} color={theme.colors.onPrimary} />
+                        </View>
+                        <Text variant="titleMedium" style={[styles.partnerName, { color: theme.colors.onSurface }]}>
+                          Add Partner
+                        </Text>
+                      </Card.Content>
+                    </Card>
+                  </TouchableRipple>
+                </Link>
+              </ScrollView>
+            </>
           )}
         </Surface>
       </ScrollView>

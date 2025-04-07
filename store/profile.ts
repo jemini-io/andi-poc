@@ -11,6 +11,7 @@ export interface Profile {
     linkedin?: string;
     facebook?: string;
     instagram?: string;
+    facebookGroups?: string[];
   };
 }
 

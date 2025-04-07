@@ -19,6 +19,7 @@ export interface ReferralOpportunity {
   timestamp: string;
   matchedUserId?: string; // ID of the partner this opportunity matches with
   comments_list?: Comment[];
+  available?: boolean; // Whether this opportunity is available to the user
 }
 
 interface PostsState {
@@ -58,7 +59,8 @@ const INITIAL_POSTS: ReferralOpportunity[] = [
         content: "I've been working with someone great, I'll DM you their details!",
         timestamp: '1h ago'
       }
-    ]
+    ],
+    available: false
   },
   {
     id: '2',
@@ -76,7 +78,8 @@ const INITIAL_POSTS: ReferralOpportunity[] = [
         content: "I know a great attorney who specializes in startups.",
         timestamp: '3h ago'
       }
-    ]
+    ],
+    available: false
   },
   {
     id: '3',
@@ -94,7 +97,8 @@ const INITIAL_POSTS: ReferralOpportunity[] = [
         content: "We just had our kitchen done, I'll send you some details!",
         timestamp: '5h ago'
       }
-    ]
+    ],
+    available: false
   },
   {
     id: '4',
@@ -112,7 +116,8 @@ const INITIAL_POSTS: ReferralOpportunity[] = [
         content: "I have a great recommendation for you! They did our company's last event.",
         timestamp: '7h ago'
       }
-    ]
+    ],
+    available: false
   },
   {
     id: '5',
@@ -130,7 +135,8 @@ const INITIAL_POSTS: ReferralOpportunity[] = [
         content: "Would love to discuss how we could help with your digital marketing needs!",
         timestamp: '10h ago'
       }
-    ]
+    ],
+    available: false
   },
   {
     id: '6',
@@ -148,7 +154,8 @@ const INITIAL_POSTS: ReferralOpportunity[] = [
         content: "I know an amazing dentist who specializes in anxious patients!",
         timestamp: '22h ago'
       }
-    ]
+    ],
+    available: false
   },
   {
     id: '7',
@@ -166,7 +173,8 @@ const INITIAL_POSTS: ReferralOpportunity[] = [
         content: "I can connect you with a great IT consulting firm we've worked with.",
         timestamp: '23h ago'
       }
-    ]
+    ],
+    available: false
   },
   {
     id: '8',
@@ -184,7 +192,8 @@ const INITIAL_POSTS: ReferralOpportunity[] = [
         content: "I know just the designer for your project! They did our office last year.",
         timestamp: '1d ago'
       }
-    ]
+    ],
+    available: false
   },
   {
     id: '9',
@@ -202,7 +211,8 @@ const INITIAL_POSTS: ReferralOpportunity[] = [
         content: "There's a great shop near Microsoft campus, very trustworthy!",
         timestamp: '1d ago'
       }
-    ]
+    ],
+    available: false
   },
   {
     id: '10',
@@ -220,7 +230,8 @@ const INITIAL_POSTS: ReferralOpportunity[] = [
         content: "I know a great developer who might be perfect for this!",
         timestamp: '2d ago'
       }
-    ]
+    ],
+    available: false
   }
 ];
 
