@@ -6,7 +6,6 @@
 export type AppRoutes = {
   // Root level
   '/': undefined;
-  '/email': undefined;
   '/onboarding': undefined;
   
   // Onboarding routes
@@ -28,6 +27,8 @@ export type AppRoutes = {
 export type AppRoutePath = keyof AppRoutes;
 
 // Declaration merging with expo-router types
-declare module 'expo-router' {
-  interface RouteParams extends AppRoutes {}
+declare global {
+  namespace ReactNavigation {
+    interface RootParamList extends AppRoutes {}
+  }
 } 

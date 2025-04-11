@@ -88,6 +88,9 @@ const BNI_MEMBERS: Partner[] = [
 export default function BniMembers() {
   const theme = useTheme();
   const { width } = useWindowDimensions();
+  const isSmallScreen = width < 576;
+  const isMediumScreen = width >= 576 && width < 768;
+  const isLargeScreen = width >= 768;
   
   // BNI Members state
   const [loadedMembers, setLoadedMembers] = useState<Partner[]>([]);
@@ -158,12 +161,17 @@ export default function BniMembers() {
   };
 
   const handleGoToDashboard = () => {
-    // Ensure profile is updated with BNI business info
+    // BNI sign-in should fill in all profile data
     updateProfile({
-      ...profile,
-      avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=400&q=80',
-      phone: '(425) 555-1234',
-      business: 'BNI Member Business'
+      name: profile.name || 'BNI Member',
+      avatar: profile.avatar || 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=400&q=80',
+      phone: profile.phone || '(425) 555-1234',
+      business: profile.business || 'BNI Member Business',
+      website: profile.website || 'www.bnimember.com',
+      social: {
+        ...profile.social,
+        linkedin: profile.social?.linkedin || 'linkedin.com/in/bnimember',
+      }
     });
     
     // Make sure partners are properly set with available: true
@@ -190,59 +198,73 @@ export default function BniMembers() {
     },
     content: {
       flex: 1,
-      padding: 20,
+      padding: isSmallScreen ? 12 : 20,
     },
     title: {
       color: '#fff',
       textAlign: 'center',
-      marginBottom: 10,
+      marginBottom: isSmallScreen ? 6 : 10,
+      fontSize: isSmallScreen ? 24 : 28,
     },
     subtitle: {
       color: '#fff',
       textAlign: 'center',
-      marginBottom: 20,
+      marginBottom: isSmallScreen ? 12 : 20,
       opacity: 0.9,
+      fontSize: isSmallScreen ? 14 : 16,
+      paddingHorizontal: isSmallScreen ? 8 : 0,
     },
     section: {
-      marginBottom: 20,
+      marginBottom: isSmallScreen ? 12 : 20,
       borderRadius: 12,
       backgroundColor: 'rgba(255, 255, 255, 0.9)',
       flex: 1,
-      minHeight: 300, // Ensure minimum height
-      maxHeight: 500, // Increased maximum height for better viewing
+      minHeight: isSmallScreen ? 200 : 300,
+      maxHeight: isLargeScreen ? 600 : isSmallScreen ? 400 : 500,
     },
     sectionTitle: {
-      padding: 16,
-      paddingBottom: 8,
+      padding: isSmallScreen ? 12 : 16,
+      paddingBottom: isSmallScreen ? 6 : 8,
     },
     scrollContent: {
-      padding: 8,
+      padding: isSmallScreen ? 4 : 8,
     },
     memberCard: {
-      marginBottom: 8,
-      marginHorizontal: 8,
+      marginBottom: isSmallScreen ? 6 : 8,
+      marginHorizontal: isSmallScreen ? 4 : 8,
     },
     memberCardContent: {
       flexDirection: 'row',
       alignItems: 'flex-start',
-      gap: 12,
+      gap: isSmallScreen ? 8 : 12,
+      padding: isSmallScreen ? 8 : 12,
     },
     memberImage: {
-      width: 60,
-      height: 60,
-      borderRadius: 30,
+      width: isSmallScreen ? 45 : 60,
+      height: isSmallScreen ? 45 : 60,
+      borderRadius: isSmallScreen ? 22.5 : 30,
     },
     memberInfo: {
       flex: 1,
     },
+    name: {
+      fontSize: isSmallScreen ? 15 : 18,
+      fontWeight: '600',
+    },
     business: {
       opacity: 0.8,
       marginTop: 2,
+      fontSize: isSmallScreen ? 13 : 15,
     },
     slogan: {
       opacity: 0.6,
       marginTop: 2,
       fontStyle: 'italic',
+      fontSize: isSmallScreen ? 12 : 14,
+    },
+    category: {
+      marginTop: 4,
+      fontSize: isSmallScreen ? 12 : 14,
     },
     categoryBadge: {
       backgroundColor: '#E3F2FD',
@@ -254,6 +276,7 @@ export default function BniMembers() {
     },
     categoryText: {
       color: '#1565C0',
+      fontSize: isSmallScreen ? 12 : 14,
     },
     loadingContainer: {
       flexDirection: 'row',
@@ -269,11 +292,16 @@ export default function BniMembers() {
       padding: 16,
       backgroundColor: 'transparent',
     },
-    dashboardButton: {
-      paddingVertical: 6,
+    buttonContainer: {
+      paddingHorizontal: isSmallScreen ? 12 : 20,
+      paddingBottom: isSmallScreen ? 12 : 20,
+      paddingTop: isSmallScreen ? 8 : 12,
     },
-    dashboardButtonText: {
-      fontSize: 18,
+    goToDashboardButton: {
+      paddingVertical: isSmallScreen ? 4 : 6,
+    },
+    buttonText: {
+      fontSize: isSmallScreen ? 16 : 18,
       fontWeight: '600',
     },
     animatedContent: {
@@ -304,9 +332,24 @@ export default function BniMembers() {
             transform: [{ translateX: slideAnim }],
           }
         ]}>
-          <Text variant="displaySmall" style={styles.title}>BNI Chapter Members</Text>
-          <Text variant="titleMedium" style={styles.subtitle}>
-            Importing members from your BNI chapter as referral partners
+          <Image
+            source={require('./BNI_Logo.png')}
+            style={[
+              { 
+                width: isSmallScreen ? 150 : 200, 
+                height: isSmallScreen ? 75 : 100,
+                alignSelf: 'center',
+                marginBottom: isSmallScreen ? 20 : 30
+              }
+            ]}
+            resizeMode="contain"
+          />
+          
+          <Text variant={isSmallScreen ? "titleLarge" : "headlineLarge"} style={styles.title}>
+            Your BNI Chapter
+          </Text>
+          <Text variant={isSmallScreen ? "bodyMedium" : "titleMedium"} style={styles.subtitle}>
+            Andi has imported these members to your trusted referral network
           </Text>
 
           {/* BNI Members Section */}
@@ -351,22 +394,20 @@ export default function BniMembers() {
               </ScrollView>
             </Animated.View>
           </Surface>
+
+          <View style={styles.buttonContainer}>
+            <Button
+              mode="contained"
+              onPress={handleGoToDashboard}
+              style={styles.goToDashboardButton}
+              labelStyle={styles.buttonText}
+              disabled={loadingMembers}
+            >
+              Go to Dashboard
+            </Button>
+          </View>
         </Animated.View>
       </ScrollView>
-
-      <Surface style={styles.footer} elevation={0}>
-        <Button
-          mode="contained"
-          onPress={handleGoToDashboard}
-          style={styles.dashboardButton}
-          labelStyle={styles.dashboardButtonText}
-          disabled={loadingMembers}
-        >
-          {loadingMembers 
-            ? "Importing Members..." 
-            : "Go to Dashboard with Referral Partners"}
-        </Button>
-      </Surface>
     </LinearGradient>
   );
 } 

@@ -7,7 +7,6 @@ import { router } from 'expo-router';
 export const Routes = {
   // Root level
   ROOT: '/',
-  EMAIL: '/email',
   ONBOARDING: '/onboarding',
   
   // Onboarding routes

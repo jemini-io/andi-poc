@@ -7,7 +7,6 @@ import SplashScreen from '../components/SplashScreen';
 declare module "expo-router" {
   interface TypedRoutes {
     "/connect-sources": {};
-    "/email": {};
     "/(app)/dashboard-v2": {};
   }
 }

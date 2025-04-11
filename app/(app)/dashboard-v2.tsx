@@ -17,7 +17,10 @@ export default function DashboardV2() {
   const theme = useTheme();
   const router = useRouter();
   const { width } = useWindowDimensions();
-  const isLargeScreen = width > 768;
+  const isSmallScreen = width < 576;
+  const isMediumScreen = width >= 576 && width < 768;
+  const isLargeScreen = width >= 768 && width < 992;
+  const isExtraLargeScreen = width >= 992;
   
   const [signInModalVisible, setSignInModalVisible] = useState(false);
   
@@ -95,7 +98,7 @@ export default function DashboardV2() {
       flex: 1,
     },
     content: {
-      padding: isLargeScreen ? 20 : 10,
+      padding: isSmallScreen ? 8 : isLargeScreen ? 16 : 20,
     },
     header: {
       paddingTop: 10,
@@ -108,18 +111,52 @@ export default function DashboardV2() {
       alignItems: 'center',
     },
     scoreboardContainer: {
-      flexDirection: 'row',
-      padding: 20,
+      flexDirection: isSmallScreen ? 'column' : 'row',
+      padding: isSmallScreen ? 10 : 20,
       marginBottom: 12,
+      alignItems: isSmallScreen ? 'center' : 'stretch',
+      justifyContent: 'space-around',
     },
     scoreCard: {
-      flex: 1,
+      flex: isSmallScreen ? 0 : 1,
+      flexDirection: 'row',
       alignItems: 'center',
-      padding: 15,
+      justifyContent: 'flex-start',
+      paddingHorizontal: isSmallScreen ? 12 : 15,
+      paddingVertical: isSmallScreen ? 12 : 15,
+      marginBottom: isSmallScreen ? 4 : 0,
+      width: isSmallScreen ? '100%' : undefined,
+      minHeight: isSmallScreen ? 60 : 70,
+      maxWidth: isSmallScreen ? '100%' : undefined,
+    },
+    scoreValue: {
+      color: theme.colors.primary,
+      textAlign: 'right',
+      marginRight: 16,
+      minWidth: isSmallScreen ? 40 : 60,
+      fontWeight: 'bold',
+    },
+    scoreLabel: {
+      color: theme.colors.onSurfaceVariant,
+      flexWrap: 'wrap',
+      flex: 1,
+      paddingRight: 4,
+      alignSelf: 'center',
+      textAlign: 'left',
     },
     middleCard: {
-      borderLeftWidth: 1,
-      borderRightWidth: 1,
+      borderLeftWidth: isSmallScreen ? 0 : 1,
+      borderRightWidth: isSmallScreen ? 0 : 1,
+      borderTopWidth: isSmallScreen ? 1 : 0,
+      borderBottomWidth: isSmallScreen ? 1 : 0,
+      borderColor: 'rgba(0,0,0,0.1)',
+      paddingVertical: isSmallScreen ? 12 : 15,
+      marginVertical: isSmallScreen ? 10 : 0,
+      justifyContent: 'center',
+      alignItems: isSmallScreen ? 'flex-start' : 'center',
+    },
+    middleCardDesktop: {
+      marginHorizontal: isSmallScreen ? 0 : 20,
     },
     section: {
       marginBottom: 12,
@@ -162,11 +199,11 @@ export default function DashboardV2() {
       marginRight: 20,
     },
     partnersScroll: {
-      paddingHorizontal: 15,
+      paddingHorizontal: isSmallScreen ? 8 : 15,
     },
     partnerCard: {
       marginHorizontal: 5,
-      width: 120,
+      width: isSmallScreen ? 100 : isMediumScreen ? 110 : 120,
     },
     partnerCardContent: {
       alignItems: 'center',
@@ -264,10 +301,16 @@ export default function DashboardV2() {
   });
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <View style={{
+      ...styles.container,
+      backgroundColor: theme.colors.background
+    }}>
       <ScrollView>
         {/* Header */}
-        <Surface style={[styles.header, { backgroundColor: theme.colors.surface }]} elevation={1}>
+        <Surface style={{
+          ...styles.header,
+          backgroundColor: theme.colors.surface
+        }} elevation={1}>
           <View style={styles.headerContent}>
             {isLoggedIn ? (
               <Link href="/edit-profile" asChild>
@@ -280,7 +323,7 @@ export default function DashboardV2() {
               </Link>
             ) : (
               <Button 
-                mode="contained" 
+                mode="outlined" 
                 onPress={() => setSignInModalVisible(true)} 
                 style={styles.signInButton}
                 compact
@@ -288,47 +331,143 @@ export default function DashboardV2() {
                 Sign In
               </Button>
             )}
-            <Text variant="headlineMedium" style={[{ fontFamily: 'DancingScript', color: theme.colors.primary }]}>
+            <Text variant="headlineMedium" style={{
+              fontFamily: 'DancingScript',
+              color: theme.colors.primary
+            }}>
               Andi AI Agent
             </Text>
-            <div></div>
+            <View />
           </View>
         </Surface>
 
         {/* Scoreboard */}
-        <Surface style={[styles.section, { backgroundColor: theme.colors.surface }]} elevation={1}>
+        <Surface style={{
+          ...styles.section,
+          backgroundColor: theme.colors.surface
+        }} elevation={1}>
           <View style={styles.scoreboardContainer}>
-            <Link href="/received-referrals" asChild>
-              <TouchableRipple>
-                <View style={styles.scoreCard}>
-                  <Text variant="headlineMedium" style={{ color: theme.colors.primary }}>
-                    {isLoggedIn ? referralsReceived : '0'}
-                  </Text>
-                  <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>Referrals Received</Text>
-                </View>
-              </TouchableRipple>
-            </Link>
-            <View style={styles.scoreCard}>
-              <Text variant="headlineMedium" style={{ color: theme.colors.primary }}>
+            {isLoggedIn && isBniConnected ? (
+              <Link href="/received-referrals" asChild>
+                <TouchableRipple style={isSmallScreen ? { width: '100%' } : undefined}>
+                  <View style={styles.scoreCard}>
+                    <Text 
+                      variant={isSmallScreen ? "titleLarge" : "headlineMedium"} 
+                      style={styles.scoreValue}
+                    >
+                      {referralsReceived}
+                    </Text>
+                    <Text 
+                      variant={isSmallScreen ? "bodyMedium" : "titleSmall"} 
+                      style={styles.scoreLabel}
+                      numberOfLines={2}
+                    >
+                      Referrals Received
+                    </Text>
+                  </View>
+                </TouchableRipple>
+              </Link>
+            ) : (
+              <View style={{
+                ...styles.scoreCard,
+                ...(isSmallScreen ? { width: '100%' } : {})
+              }}>
+                <Text 
+                  variant={isSmallScreen ? "titleLarge" : "headlineMedium"} 
+                  style={{
+                    ...styles.scoreValue,
+                    ...(!isLoggedIn ? { color: theme.colors.onSurfaceDisabled } : {})
+                  }}
+                >
+                  0
+                </Text>
+                <Text 
+                  variant={isSmallScreen ? "bodyMedium" : "titleSmall"} 
+                  style={{
+                    ...styles.scoreLabel,
+                    ...(!isLoggedIn ? { color: theme.colors.onSurfaceDisabled } : {})
+                  }}
+                  numberOfLines={2}
+                >
+                  Referrals Received
+                </Text>
+              </View>
+            )}
+            
+            <View style={{
+              ...styles.scoreCard,
+              ...styles.middleCard,
+              ...(isSmallScreen ? { width: '100%' } : styles.middleCardDesktop)
+            }}>
+              <Text 
+                variant={isSmallScreen ? "titleLarge" : "headlineMedium"} 
+                style={[styles.scoreValue, !isLoggedIn && { color: theme.colors.onSurfaceDisabled }]}
+              >
                 {isLoggedIn ? referralsGiven : '0'}
               </Text>
-              <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>Referrals Given</Text>
+              <Text 
+                variant={isSmallScreen ? "bodyMedium" : "titleSmall"} 
+                style={[styles.scoreLabel, !isLoggedIn && { color: theme.colors.onSurfaceDisabled }]}
+                numberOfLines={2}
+              >
+                Referrals Given
+              </Text>
             </View>
-            <Link href="/opportunities" asChild>
-              <TouchableRipple>
-                <View style={styles.scoreCard}>
-                  <Text variant="headlineMedium" style={{ color: theme.colors.primary }}>
-                    {isLoggedIn ? opportunities : '0'}
-                  </Text>
-                  <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>Opportunities</Text>
-                </View>
-              </TouchableRipple>
-            </Link>
+            
+            {isLoggedIn && isFacebookConnected ? (
+              <Link href="/opportunities" asChild>
+                <TouchableRipple style={isSmallScreen ? { width: '100%' } : undefined}>
+                  <View style={styles.scoreCard}>
+                    <Text 
+                      variant={isSmallScreen ? "titleLarge" : "headlineMedium"} 
+                      style={styles.scoreValue}
+                    >
+                      {opportunities}
+                    </Text>
+                    <Text 
+                      variant={isSmallScreen ? "bodyMedium" : "titleSmall"} 
+                      style={styles.scoreLabel}
+                      numberOfLines={2}
+                    >
+                      Opportunities
+                    </Text>
+                  </View>
+                </TouchableRipple>
+              </Link>
+            ) : (
+              <View style={{
+                ...styles.scoreCard,
+                ...(isSmallScreen ? { width: '100%' } : {})
+              }}>
+                <Text 
+                  variant={isSmallScreen ? "titleLarge" : "headlineMedium"} 
+                  style={{
+                    ...styles.scoreValue,
+                    ...(!isLoggedIn ? { color: theme.colors.onSurfaceDisabled } : {})
+                  }}
+                >
+                  0
+                </Text>
+                <Text 
+                  variant={isSmallScreen ? "bodyMedium" : "titleSmall"} 
+                  style={{
+                    ...styles.scoreLabel,
+                    ...(!isLoggedIn ? { color: theme.colors.onSurfaceDisabled } : {})
+                  }}
+                  numberOfLines={2}
+                >
+                  Opportunities
+                </Text>
+              </View>
+            )}
           </View>
         </Surface>
 
         {/* Referral Opportunities */}
-        <Surface style={[styles.section, { backgroundColor: theme.colors.surface }]} elevation={1}>
+        <Surface style={{
+          ...styles.section,
+          backgroundColor: theme.colors.surface
+        }} elevation={1}>
           <View style={styles.sectionHeader}>
             <Text variant="titleLarge" style={{ color: theme.colors.onSurface }}>Referral Opportunities</Text>
             {isFacebookConnected && isLoggedIn && (
@@ -429,7 +568,11 @@ export default function DashboardV2() {
         </Surface>
 
         {/* Top Partners */}
-        <Surface style={[styles.section, styles.lastSection, { backgroundColor: theme.colors.surface }]} elevation={1}>
+        <Surface style={{
+          ...styles.section,
+          ...styles.lastSection,
+          backgroundColor: theme.colors.surface
+        }} elevation={1}>
           <View style={styles.sectionHeader}>
             <Text variant="titleLarge" style={{ color: theme.colors.onSurface }}>Referral Partners</Text>
             {isBniConnected ? (
@@ -449,6 +592,18 @@ export default function DashboardV2() {
                     <Ionicons name="search" size={16} color="#003767" />
                   </TouchableRipple>
                 )}
+                <Link href="/add-partner" asChild>
+                  <TouchableRipple 
+                    style={{
+                      ...styles.viewBniButton,
+                      backgroundColor: theme.colors.primary,
+                      marginLeft: 8
+                    }}
+                    borderless
+                  >
+                    <Ionicons name="add" size={16} color="white" />
+                  </TouchableRipple>
+                </Link>
               </View>
             ) : (
               <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>
@@ -463,17 +618,37 @@ export default function DashboardV2() {
                 <Text variant="bodyLarge" style={styles.signInMessage}>
                   Sign in with BNI to connect with referral partners and grow your network.
                 </Text>
-                <Button 
-                  mode="contained" 
-                  onPress={() => {
-                    navigate.push('BNI');
-                  }}
-                  style={styles.signInButton}
-                  icon="briefcase"
-                  buttonColor="#003767"
-                >
-                  Sign in with BNI
-                </Button>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Button 
+                    mode="contained" 
+                    onPress={() => {
+                      navigate.push('BNI');
+                    }}
+                    style={{
+                      ...styles.signInButton,
+                      flex: 1,
+                      marginRight: 10
+                    }}
+                    icon="briefcase"
+                    buttonColor="#003767"
+                  >
+                    Sign in with BNI
+                  </Button>
+                  <Link href="/add-partner" asChild>
+                    <Button 
+                      mode="contained" 
+                      style={{
+                        ...styles.signInButton,
+                        flex: 1
+                      }}
+                      icon={({ size, color }) => (
+                        <Ionicons name="add" size={size} color={color} />
+                      )}
+                    >
+                      Add Partner
+                    </Button>
+                  </Link>
+                </View>
               </Card.Content>
             </Card>
           ) : (
@@ -486,29 +661,21 @@ export default function DashboardV2() {
                         source={{ uri: partner.image }}
                         style={styles.partnerImage}
                       />
-                      <Text variant="titleMedium" style={[styles.partnerName, { color: theme.colors.onSurface }]}>
+                      <Text variant="titleMedium" style={{
+                        ...styles.partnerName,
+                        color: theme.colors.onSurface
+                      }}>
                         {partner.name}
                       </Text>
-                      <Text variant="bodySmall" style={[styles.partnerBusiness, { color: theme.colors.onSurfaceVariant }]}>
+                      <Text variant="bodySmall" style={{
+                        ...styles.partnerBusiness,
+                        color: theme.colors.onSurfaceVariant
+                      }}>
                         {partner.business}
                       </Text>
                     </Card.Content>
                   </Card>
                 ))}
-                <Link href="/add-partner" asChild>
-                  <TouchableRipple>
-                    <Card style={[styles.partnerCard, styles.addPartnerCard]} mode="outlined">
-                      <Card.Content style={styles.partnerCardContent}>
-                        <View style={[styles.addPartnerCircle, { backgroundColor: theme.colors.primary }]}>
-                          <Ionicons name="add" size={32} color={theme.colors.onPrimary} />
-                        </View>
-                        <Text variant="titleMedium" style={[styles.partnerName, { color: theme.colors.onSurface }]}>
-                          Add Partner
-                        </Text>
-                      </Card.Content>
-                    </Card>
-                  </TouchableRipple>
-                </Link>
               </ScrollView>
             </>
           )}

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, Image, Animated } from 'react-native';
+import { View, StyleSheet, Image, Animated, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme, Text, TextInput, Button, Surface } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,6 +8,10 @@ import { navigate } from '../navigation';
 
 export default function FacebookConnect() {
   const theme = useTheme();
+  const { width, height } = useWindowDimensions();
+  const isSmallScreen = width < 576;
+  const isMediumScreen = width >= 576 && width < 768;
+  const isLargeScreen = width >= 768;
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const updateProfile = useProfileStore(state => state.updateProfile);
@@ -59,9 +63,10 @@ export default function FacebookConnect() {
       colors={[theme.colors.primary, theme.colors.secondary]}
       style={styles.container}
     >
-      <View style={styles.content}>
+      <View style={[styles.content, isLargeScreen && styles.contentLarge]}>
         <Animated.View style={[
           styles.animatedContent,
+          isLargeScreen && styles.animatedContentLarge,
           {
             opacity: fadeAnim,
             transform: [{ translateX: slideAnim }],
@@ -69,16 +74,16 @@ export default function FacebookConnect() {
         ]}>
           <Image
             source={require('./fbicon.png')}
-            style={styles.image}
+            style={[styles.image, isSmallScreen && styles.imageSmall]}
             resizeMode="contain"
           />
           
-          <Text variant="displaySmall" style={styles.title}>Connect Facebook</Text>
+          <Text variant={isSmallScreen ? "headlineMedium" : "displaySmall"} style={styles.title}>Connect Facebook</Text>
           <Text variant="titleMedium" style={styles.description}>
             Connect your Facebook account to let Andi monitor your groups for referral opportunities.
           </Text>
 
-          <Surface style={styles.form} elevation={2}>
+          <Surface style={[styles.form, isLargeScreen && styles.formLarge]} elevation={2}>
             <TextInput
               mode="outlined"
               label="Facebook Email or Phone"
@@ -140,17 +145,29 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 20,
+    padding: 16,
     justifyContent: 'center',
   },
+  contentLarge: {
+    paddingHorizontal: 40,
+  },
   animatedContent: {
-    // Added to wrap the animated content
+    maxWidth: '100%',
+  },
+  animatedContentLarge: {
+    maxWidth: 600,
+    alignSelf: 'center',
   },
   image: {
     width: 120,
     height: 120,
     marginBottom: 30,
     alignSelf: 'center',
+  },
+  imageSmall: {
+    width: 80,
+    height: 80,
+    marginBottom: 20,
   },
   title: {
     color: '#fff',
@@ -167,6 +184,11 @@ const styles = StyleSheet.create({
   form: {
     padding: 20,
     borderRadius: 12,
+  },
+  formLarge: {
+    maxWidth: 500,
+    alignSelf: 'center',
+    width: '100%',
   },
   input: {
     marginBottom: 15,

@@ -1,16 +1,38 @@
 import { View, StyleSheet, ScrollView } from 'react-native';
+import { useState, useEffect } from 'react';
 import { useTheme, Text, Surface, Card } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import NavigationBar from '../components/NavigationBar';
 import { useReceivedReferralsStore } from '../../../store/received-referrals';
 import { usePartnersStore } from '../../../store/partners';
 import { usePostsStore } from '../../../store/posts';
+import { useProfileStore } from '../../../store/profile';
+import AccessDeniedScreen from '../../../components/AccessDeniedScreen';
+
+// Helper function moved directly to the component
+const isUserConnectedToBNI = (): boolean => {
+  const profile = useProfileStore.getState().profile;
+  const isAuthenticated = profile.email !== 'pat@example.com';
+  // Only check for BNI connection, not Facebook connection
+  return isAuthenticated && profile.business === 'BNI Member Business';
+};
 
 export default function ReceivedReferrals() {
   const theme = useTheme();
   const referrals = useReceivedReferralsStore(state => state.referrals);
   const getPartnerById = usePartnersStore(state => state.getPartnerById);
   const getPostById = usePostsStore(state => state.getPostById);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+
+  useEffect(() => {
+    // Check if the user has BNI access
+    setIsAuthorized(isUserConnectedToBNI());
+  }, []);
+
+  // If user doesn't have BNI access, show Access Denied screen
+  if (!isAuthorized) {
+    return <AccessDeniedScreen type="bni" />;
+  }
 
   const getSourceIcon = (source: 'facebook' | 'instagram' | 'linkedin' | 'nextdoor' | 'alignable') => {
     switch (source) {

@@ -7,6 +7,8 @@ import { usePartnersStore } from '../../../store/partners';
 import { usePostsStore } from '../../../store/posts';
 import { useTheme, Text, Surface, Card, Button, TextInput, IconButton } from 'react-native-paper';
 import { useStatsStore } from '../../../store/stats';
+import { useProfileStore } from '../../../store/profile';
+import { navigate } from '../../../app/navigation';
 
 const generateDraftMessage = (post: any, partner: any): string => {
   const intro = "I'd like to recommend";
@@ -37,6 +39,12 @@ export default function Details() {
   const getPartnerById = usePartnersStore(state => state.getPartnerById);
   const addGivenReferral = useStatsStore(state => state.addGivenReferral);
   const matchingPartner = post?.matchedUserId ? getPartnerById(post.matchedUserId) : undefined;
+  const profile = useProfileStore(state => state.profile);
+  
+  // Check if user is signed into BNI
+  const isBniConnected = profile.business === 'BNI Member Business';
+  // Check if user is connected to Facebook
+  const isFacebookConnected = profile.social?.facebook !== undefined;
 
   const [draftMessage, setLocalDraftMessage] = useState(
     matchingPartner ? generateDraftMessage(post!, matchingPartner) : ''
@@ -142,7 +150,8 @@ export default function Details() {
           </Card.Content>
         </Card>
 
-        {matchingPartner && (
+        {/* Only show Best Match and Referral Message if user is connected to BNI */}
+        {matchingPartner && isBniConnected && (
           <>
             <Card style={styles.matchSection} mode="outlined">
               <Card.Content>
@@ -205,6 +214,27 @@ export default function Details() {
               </Card.Content>
             </Card>
           </>
+        )}
+        
+        {/* Show message when user is connected to Facebook but not BNI */}
+        {matchingPartner && isFacebookConnected && !isBniConnected && (
+          <Card style={styles.emptyCard} mode="outlined">
+            <Card.Content>
+              <Text variant="titleLarge" style={{ marginBottom: 12 }}>Connect with BNI</Text>
+              <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, marginBottom: 16 }}>
+                Sign in with BNI to access the Best Match and Referral Message features.
+              </Text>
+              <Button 
+                mode="contained"
+                onPress={() => navigate.push('BNI')}
+                icon="briefcase"
+                buttonColor="#003767"
+                style={{ marginTop: 8 }}
+              >
+                Connect with BNI
+              </Button>
+            </Card.Content>
+          </Card>
         )}
       </ScrollView>
     </Surface>
@@ -315,5 +345,9 @@ const styles = StyleSheet.create({
   },
   postButtonContent: {
     paddingVertical: 6,
+  },
+  emptyCard: {
+    margin: 12,
+    padding: 8,
   },
 });

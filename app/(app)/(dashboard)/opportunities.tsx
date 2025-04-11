@@ -1,4 +1,5 @@
 import { View, StyleSheet, ScrollView } from 'react-native';
+import { useState, useEffect } from 'react';
 import { useTheme, Text, Surface, Card, TouchableRipple } from 'react-native-paper';
 import { Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,11 +7,31 @@ import { usePostsStore } from '../../../store/posts';
 import { useStatsStore } from '../../../store/stats';
 import NavigationBar from '../components/NavigationBar';
 import { ReferralOpportunity } from '../../../store/posts';
+import { useProfileStore } from '../../../store/profile';
+import AccessDeniedScreen from '../../../components/AccessDeniedScreen';
+
+// Helper function moved directly to the component
+const isUserConnectedToFacebook = (): boolean => {
+  const profile = useProfileStore.getState().profile;
+  const isAuthenticated = profile.email !== 'pat@example.com';
+  return isAuthenticated && profile.social?.facebook !== undefined;
+};
 
 export default function Opportunities() {
   const theme = useTheme();
   const posts = usePostsStore(state => state.posts);
   const hasReferral = useStatsStore(state => state.hasReferral);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+
+  useEffect(() => {
+    // Check if the user has Facebook access
+    setIsAuthorized(isUserConnectedToFacebook());
+  }, []);
+
+  // If user doesn't have Facebook access, show Access Denied screen
+  if (!isAuthorized) {
+    return <AccessDeniedScreen type="facebook" />;
+  }
 
   const availableOpportunities = posts
     .filter(post => !hasReferral(post.id))

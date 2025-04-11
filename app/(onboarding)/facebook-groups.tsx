@@ -51,6 +51,9 @@ const GROUPS: Group[] = [
 export default function FacebookGroups() {
   const theme = useTheme();
   const { width } = useWindowDimensions();
+  const isSmallScreen = width < 576;
+  const isMediumScreen = width >= 576 && width < 768;
+  const isLargeScreen = width >= 768;
   
   // Facebook Groups state
   const [loadedGroups, setLoadedGroups] = useState<Group[]>([]);
@@ -125,10 +128,14 @@ export default function FacebookGroups() {
     // Get the actual selected group objects
     const selectedGroupObjects = GROUPS.filter(group => selectedGroupIds.includes(group.id));
     
-    // Update profile with selected Facebook groups
+    // Update profile with selected Facebook groups and Facebook-specific info
+    // But don't fill in other profile fields - they should remain empty
     updateProfile({
+      // Add a Facebook-themed avatar if none exists yet
+      avatar: profile.avatar || 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=400&q=80',
       social: {
         ...profile.social,
+        facebook: profile.social?.facebook || `facebook.com/${profile.email?.split('@')[0]}`,
         facebookGroups: selectedGroupIds
       }
     });
@@ -167,50 +174,52 @@ export default function FacebookGroups() {
     navigate.replace('DASHBOARD');
   };
 
-  // Define responsive styles
+  // Define responsive styles conditionally based on screen size
   const styles = StyleSheet.create({
     container: {
       flex: 1,
     },
     content: {
       flex: 1,
-      padding: 20,
+      padding: isSmallScreen ? 12 : 20,
     },
     fbImage: {
-      width: 80,
-      height: 80,
-      marginBottom: 20,
+      width: isSmallScreen ? 60 : 80,
+      height: isSmallScreen ? 60 : 80,
+      marginBottom: isSmallScreen ? 12 : 20,
       alignSelf: 'center',
     },
     title: {
       color: '#fff',
       textAlign: 'center',
-      marginBottom: 10,
+      marginBottom: isSmallScreen ? 6 : 10,
+      fontSize: isSmallScreen ? 24 : 28,
     },
     subtitle: {
       color: '#fff',
       textAlign: 'center',
-      marginBottom: 20,
+      marginBottom: isSmallScreen ? 12 : 20,
       opacity: 0.9,
+      fontSize: isSmallScreen ? 14 : 16,
     },
     section: {
-      marginBottom: 20,
+      marginBottom: isSmallScreen ? 12 : 20,
       borderRadius: 12,
       backgroundColor: 'rgba(255, 255, 255, 0.9)',
       flex: 1,
-      minHeight: 200, // Ensure minimum height
-      maxHeight: 450, // Increased maximum height for better viewing
+      minHeight: isSmallScreen ? 150 : 200, 
+      maxHeight: isLargeScreen ? 550 : isSmallScreen ? 350 : 450,
     },
     sectionTitle: {
-      padding: 16,
-      paddingBottom: 8,
+      padding: isSmallScreen ? 12 : 16,
+      paddingBottom: isSmallScreen ? 6 : 8,
     },
     scrollContent: {
-      padding: 8,
+      padding: isSmallScreen ? 4 : 8,
     },
     groupCard: {
-      marginBottom: 8,
-      marginHorizontal: 8,
+      marginBottom: isSmallScreen ? 6 : 8,
+      marginHorizontal: isSmallScreen ? 4 : 8,
     },
     selectedCard: {
       backgroundColor: '#E3F2FD',
@@ -220,21 +229,24 @@ export default function FacebookGroups() {
     groupCardContent: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 12,
+      gap: isSmallScreen ? 8 : 12,
+      padding: isSmallScreen ? 8 : 12,
     },
     groupImage: {
-      width: 50,
-      height: 50,
-      borderRadius: 25,
+      width: isSmallScreen ? 40 : 50,
+      height: isSmallScreen ? 40 : 50,
+      borderRadius: isSmallScreen ? 20 : 25,
     },
     groupInfo: {
       flex: 1,
     },
     groupName: {
       fontWeight: '500',
+      fontSize: isSmallScreen ? 14 : 16,
     },
     groupMembers: {
       opacity: 0.7,
+      fontSize: isSmallScreen ? 12 : 14,
     },
     loadingContainer: {
       flexDirection: 'row',
@@ -246,25 +258,11 @@ export default function FacebookGroups() {
       marginLeft: 10,
       color: theme.colors.onSurface,
     },
-    footer: {
-      padding: 16,
-      backgroundColor: 'transparent',
-      flexDirection: 'row',
+    footerButtons: {
+      flexDirection: isSmallScreen ? 'column' : 'row',
       justifyContent: 'space-between',
-    },
-    continueButton: {
-      flex: 1,
-      marginRight: 8,
-    },
-    cancelButton: {
-      marginLeft: 8,
-    },
-    buttonText: {
-      fontSize: 16,
-      fontWeight: '600',
-    },
-    animatedContent: {
-      flex: 1,
+      marginTop: isSmallScreen ? 8 : 16,
+      gap: isSmallScreen ? 8 : 12,
     },
   });
 
@@ -275,7 +273,6 @@ export default function FacebookGroups() {
     >
       <ScrollView style={styles.content}>
         <Animated.View style={[
-          styles.animatedContent,
           {
             opacity: fadeAnim,
             transform: [{ translateX: slideAnim }],
@@ -287,9 +284,11 @@ export default function FacebookGroups() {
             resizeMode="contain"
           />
           
-          <Text variant="displaySmall" style={styles.title}>Facebook Groups</Text>
-          <Text variant="titleMedium" style={styles.subtitle}>
-            Select which groups you want Andi to monitor for opportunities
+          <Text variant={isSmallScreen ? "titleLarge" : "headlineLarge"} style={styles.title}>
+            Your Facebook Groups
+          </Text>
+          <Text variant={isSmallScreen ? "bodyMedium" : "titleMedium"} style={styles.subtitle}>
+            Select groups for Andi to monitor for referral opportunities
           </Text>
 
           {/* Facebook Groups Section */}
@@ -344,28 +343,19 @@ export default function FacebookGroups() {
         </Animated.View>
       </ScrollView>
 
-      <Surface style={styles.footer} elevation={0}>
+      <View style={styles.footerButtons}>
+        <Button mode="outlined" onPress={handleCancel} style={isSmallScreen ? {width: '100%'} : {flex: 1}}>
+          Cancel
+        </Button>
         <Button
           mode="contained"
           onPress={handleContinue}
-          style={styles.continueButton}
-          labelStyle={styles.buttonText}
-          disabled={loadingGroups || selectedGroups.size === 0}
+          disabled={selectedGroups.size === 0}
+          style={isSmallScreen ? {width: '100%'} : {flex: 1}}
         >
-          {loadingGroups 
-            ? "Loading..." 
-            : `Finish with ${selectedGroups.size} ${selectedGroups.size === 1 ? 'Group' : 'Groups'}`}
+          Continue
         </Button>
-        
-        <Button
-          mode="outlined"
-          onPress={handleCancel}
-          style={styles.cancelButton}
-          labelStyle={styles.buttonText}
-        >
-          Cancel
-        </Button>
-      </Surface>
+      </View>
     </LinearGradient>
   );
 } 
