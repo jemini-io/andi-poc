@@ -3,6 +3,8 @@ import { View, StyleSheet, Modal, TouchableOpacity, TouchableWithoutFeedback } f
 import { Surface, Text, Button, useTheme } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { navigate } from '../app/navigation';
+import { isConnectedToBNI, isConnectedToFacebook, isAuthenticated } from '../utils/auth';
+import { useProfileStore } from '../store/profile';
 
 interface SignInModalProps {
   visible: boolean;
@@ -11,6 +13,21 @@ interface SignInModalProps {
 
 export default function SignInModal({ visible, onDismiss }: SignInModalProps) {
   const theme = useTheme();
+  const profile = useProfileStore(state => state.profile);
+  
+  // Check the BNI connection directly from the profile
+  const isBniConnected = isAuthenticated() && profile.business === 'BNI Member Business';
+  const isFacebookConnected = isAuthenticated() && profile.social?.facebook !== undefined;
+  
+  // Debug info - log the connection status when modal becomes visible
+  React.useEffect(() => {
+    if (visible) {
+      console.log('SignInModal opened');
+      console.log('Profile business:', profile.business);
+      console.log('Direct check - isBniConnected:', isBniConnected);
+      console.log('Auth util - isConnectedToBNI():', isConnectedToBNI());
+    }
+  }, [visible, profile, isBniConnected]);
 
   const handleFacebookConnect = () => {
     onDismiss();
@@ -44,27 +61,61 @@ export default function SignInModal({ visible, onDismiss }: SignInModalProps) {
                 Choose which platform to connect
               </Text>
               
-              <Button
-                mode="contained"
-                icon={({ size, color }) => (
-                  <Ionicons name="logo-facebook" size={size} color={color} />
+              <View style={styles.buttonContainer}>
+                <Button
+                  mode="contained"
+                  icon={({ size, color }) => (
+                    <Ionicons 
+                      name={isFacebookConnected ? "checkmark-circle" : "logo-facebook"} 
+                      size={size} 
+                      color={color} 
+                    />
+                  )}
+                  onPress={handleFacebookConnect}
+                  style={[
+                    styles.button, 
+                    { 
+                      backgroundColor: isFacebookConnected ? '#4CAF50' : '#1877F2',
+                      borderWidth: isFacebookConnected ? 2 : 0,
+                      borderColor: isFacebookConnected ? '#2E7D32' : 'transparent'
+                    }
+                  ]}
+                  contentStyle={styles.buttonContent}
+                  disabled={isFacebookConnected}
+                >
+                  {isFacebookConnected ? 'Connected to Facebook' : 'Connect with Facebook'}
+                </Button>
+                {isFacebookConnected && (
+                  <View style={styles.checkmarkContainer}>
+                    <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />
+                  </View>
                 )}
-                onPress={handleFacebookConnect}
-                style={[styles.button, { backgroundColor: '#1877F2' }]}
-                contentStyle={styles.buttonContent}
-              >
-                Connect with Facebook
-              </Button>
+              </View>
               
-              <Button
-                mode="contained"
-                icon="briefcase"
-                onPress={handleBNIConnect}
-                style={[styles.button, { backgroundColor: '#003767' }]}
-                contentStyle={styles.buttonContent}
-              >
-                Connect with BNI
-              </Button>
+              <View style={styles.buttonContainer}>
+                <Button
+                  mode="contained"
+                  icon={isBniConnected ? "check-bold" : "briefcase"}
+                  onPress={handleBNIConnect}
+                  style={[
+                    styles.button, 
+                    { 
+                      backgroundColor: isBniConnected ? '#4CAF50' : '#003767',
+                      borderWidth: isBniConnected ? 2 : 0,
+                      borderColor: isBniConnected ? '#2E7D32' : 'transparent'
+                    }
+                  ]}
+                  contentStyle={styles.buttonContent}
+                  disabled={isBniConnected}
+                >
+                  {isBniConnected ? 'Connected to BNI' : 'Connect with BNI'}
+                </Button>
+                {isBniConnected && (
+                  <View style={styles.checkmarkContainer}>
+                    <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />
+                  </View>
+                )}
+              </View>
               
               <Button
                 mode="text"
@@ -111,14 +162,22 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     textAlign: 'center',
   },
-  button: {
-    marginBottom: 16,
+  buttonContainer: {
     width: '100%',
+    marginBottom: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  button: {
+    flex: 1,
   },
   buttonContent: {
     paddingVertical: 8,
   },
   skipButton: {
     marginTop: 8,
+  },
+  checkmarkContainer: {
+    marginLeft: 10,
   },
 }); 

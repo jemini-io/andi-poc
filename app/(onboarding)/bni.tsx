@@ -58,11 +58,12 @@ export default function BNIConnect() {
       phone: '(425) 555-6789'
     });
     
-    // We'll let bni-members.tsx handle setting the partners available
-    // This removes the redundancy between the two files
-    setConnecting(false);
+    // Make sure the application knows the user is connected to BNI
+    console.log('BNI connection successful - navigating to BNI Members page');
+    console.log('Updated profile:', useProfileStore.getState().profile);
     
     // Navigate to BNI Members page which will handle importing members
+    setConnecting(false);
     navigate.push('BNI_MEMBERS');
   };
 

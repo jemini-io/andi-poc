@@ -87,25 +87,24 @@ const BNI_MEMBERS: Partner[] = [
 
 export default function BniMembers() {
   const theme = useTheme();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const isSmallScreen = width < 576;
   const isMediumScreen = width >= 576 && width < 768;
   const isLargeScreen = width >= 768;
   
-  // BNI Members state
   const [loadedMembers, setLoadedMembers] = useState<Partner[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(true);
-  const { setPartners, clearPartners } = usePartnersStore();
+  const { setPartners, partners } = usePartnersStore();
   const profile = useProfileStore(state => state.profile);
   const updateProfile = useProfileStore(state => state.updateProfile);
-
+  
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
   const contentFadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // First animation: Slide in the sections
+    // Start the loading animation
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -117,45 +116,60 @@ export default function BniMembers() {
         duration: 800,
         useNativeDriver: true,
       }),
-    ]).start(() => {
-      // After sections slide in, start loading content with fade
-      Animated.timing(contentFadeAnim, {
-        toValue: 1,
-        duration: 800,
-        useNativeDriver: true,
-        delay: 200, // Small delay before content starts appearing
-      }).start();
-      
-      // Start loading members
+    ]).start();
+    
+    // Also start content fade in animation
+    Animated.timing(contentFadeAnim, {
+      toValue: 1,
+      duration: 1200,
+      useNativeDriver: true,
+    }).start();
+    
+    // Load BNI members with a delay for visual effect
+    setTimeout(() => {
       loadContent();
-    });
+    }, 500);
   }, []);
 
   const loadContent = () => {
-    clearPartners();
+    // Set loading state
+    setLoadingMembers(true);
     
-    // Load BNI members gradually
-    let currentMember = 0;
+    // Create a counter for a simulated loading experience
+    let membersLoaded = 0;
     const memberInterval = setInterval(() => {
-      if (currentMember < BNI_MEMBERS.length) {
-        // Create a new member with 'available' set to true
-        const newMember = {
-          ...BNI_MEMBERS[currentMember],
-          available: true
-        };
-        
-        setLoadedMembers(prev => [...prev, newMember]);
-        currentMember++;
-      } else {
+      membersLoaded += Math.floor(Math.random() * 3) + 1;
+      if (membersLoaded >= BNI_MEMBERS.length) {
+        membersLoaded = BNI_MEMBERS.length;
+      }
+      
+      setLoadedMembers(BNI_MEMBERS.slice(0, membersLoaded));
+      
+      if (membersLoaded >= BNI_MEMBERS.length) {
         clearInterval(memberInterval);
         setLoadingMembers(false);
         
-        // Save all partners to the store with 'available' set to true
+        // Define BNI members with available flag explicitly set
         const availableMembers = BNI_MEMBERS.map(member => ({
           ...member,
-          available: true
+          available: true // Force available to be true
         }));
-        setPartners(availableMembers);
+        
+        // Get existing manually added partners to preserve them
+        const existingPartners = partners.filter(partner => partner.id.includes('_'));
+        
+        // Create new combined partners array - BNI members first, then manual partners
+        const combinedPartners = [...availableMembers, ...existingPartners];
+        
+        // Debug info before setting partners
+        console.log('BNI Members page - Setting partners:');
+        console.log('Available BNI members:', availableMembers.length);
+        console.log('Existing manual partners:', existingPartners.length);
+        console.log('Combined partners:', combinedPartners.length);
+        console.log('Sample BNI member:', availableMembers[0]);
+        
+        // Combine BNI partners with existing manually added partners
+        setPartners(combinedPartners);
       }
     }, 800);
   };
@@ -166,7 +180,7 @@ export default function BniMembers() {
       name: profile.name || 'BNI Member',
       avatar: profile.avatar || 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=400&q=80',
       phone: profile.phone || '(425) 555-1234',
-      business: profile.business || 'BNI Member Business',
+      business: 'BNI Member Business', // Always set this to indicate BNI connection
       website: profile.website || 'www.bnimember.com',
       social: {
         ...profile.social,
@@ -178,13 +192,25 @@ export default function BniMembers() {
     if (loadedMembers.length > 0) {
       const availableMembers = loadedMembers.map(member => ({
         ...member,
-        available: true
+        available: true // Ensure available flag is set to true
       }));
       
-      // Save the partners to the store again to ensure they're available
-      setPartners(availableMembers);
+      // Get existing manually added partners
+      const existingPartners = partners.filter(partner => partner.id.includes('_'));
       
-      console.log(`BNI partners imported: ${availableMembers.length} referral partners now available.`);
+      // Create new combined partners array
+      const combinedPartners = [...availableMembers, ...existingPartners];
+      
+      // Debug final partners before navigating to dashboard
+      console.log('BNI Members page - Navigating with partners:');
+      console.log('BNI member count:', availableMembers.length);
+      console.log('Manual partner count:', existingPartners.length);
+      console.log('Total partner count:', combinedPartners.length);
+      
+      // Save the combined partners to the store to ensure all are available
+      setPartners(combinedPartners);
+    } else {
+      console.warn('No BNI members loaded before navigating to dashboard');
     }
     
     // Navigate to dashboard

@@ -127,8 +127,36 @@ export const usePartnersStore = create<PartnersState>((set, get) => ({
   
   // Set all partners (used for bulk updates)
   setPartners: (partners) => {
-    if (partners.length <= MAX_PARTNERS) {
-      set({ partners });
+    console.log('Setting partners in store:', partners.length);
+    console.log('BNI partners:', partners.filter(p => !p.id.includes('_') && p.available === true).length);
+    console.log('Manual partners:', partners.filter(p => p.id.includes('_') && p.available === true).length);
+    
+    // Ensure all partners have the available flag explicitly set
+    const processedPartners = partners.map(partner => ({
+      ...partner,
+      available: partner.available === undefined ? true : partner.available
+    }));
+    
+    // Detailed logging for debugging
+    console.log('Partners with available=true after processing:', 
+      processedPartners.filter(p => p.available === true).length);
+    
+    // Check for any BNI partners with available=false that should be true
+    const bniPartnersWithAvailableFalse = processedPartners.filter(
+      p => !p.id.includes('_') && p.available !== true
+    );
+    
+    if (bniPartnersWithAvailableFalse.length > 0) {
+      console.warn('Found BNI partners with available≠true:', bniPartnersWithAvailableFalse.length);
+      // Force them to be available=true
+      bniPartnersWithAvailableFalse.forEach(p => p.available = true);
+    }
+    
+    if (processedPartners.length <= MAX_PARTNERS) {
+      set({ partners: processedPartners });
+    } else {
+      console.warn(`Attempted to set ${processedPartners.length} partners but max is ${MAX_PARTNERS}`);
+      set({ partners: processedPartners.slice(0, MAX_PARTNERS) });
     }
   },
 

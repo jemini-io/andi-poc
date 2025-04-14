@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Image, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Link, useRouter } from 'expo-router';
@@ -65,6 +65,50 @@ export default function DashboardV2() {
       return getTimeValue(a.timestamp) - getTimeValue(b.timestamp);
     })
     .slice(0, 3);
+
+  // BNI partners (those marked available by the BNI connection)
+  const bniPartners = partners.filter(partner => 
+    partner.available === true && 
+    !partner.id.includes('_') &&
+    partner.id.length < 10
+  );
+  
+  // Log additional partner info for debugging
+  useEffect(() => {
+    // Report if no BNI partners with available=true were found
+    if (isBniConnected && bniPartners.length === 0) {
+      console.log('Warning: User is BNI connected but no BNI partners found with available=true');
+      console.log('All partners:', partners);
+      console.log('Partners with available=true:', partners.filter(p => p.available === true).length);
+      console.log('Partners with ID not containing "_":', partners.filter(p => !p.id.includes('_')).length);
+    }
+  }, [isBniConnected, bniPartners, partners]);
+  
+  // Get manually added partners (those with underscore in ID and available=true)
+  const manuallyAddedPartners = partners.filter(partner => 
+    partner.available === true && 
+    partner.id.includes('_')
+  );
+  
+  // Combined partners to display - include both BNI and manually added partners
+  const allDisplayablePartners = [...bniPartners, ...manuallyAddedPartners];
+  
+  // For displaying the count of total partners in the header
+  const totalPartners = allDisplayablePartners.length;
+  
+  // Debug console logs
+  useEffect(() => {
+    console.log('Dashboard partners state:');
+    console.log('All partners count:', partners.length);
+    console.log('BNI partners count:', bniPartners.length);
+    console.log('Manually added partners count:', manuallyAddedPartners.length);
+    console.log('Total displayable partners:', totalPartners);
+    
+    // Log the first BNI partner for inspection
+    if (bniPartners.length > 0) {
+      console.log('Sample BNI partner:', bniPartners[0]);
+    }
+  }, [partners, bniPartners, manuallyAddedPartners]);
 
   const getSourceIcon = (source: 'facebook' | 'instagram' | 'linkedin' | 'nextdoor' | 'alignable') => {
     switch (source) {
@@ -574,16 +618,34 @@ export default function DashboardV2() {
           backgroundColor: theme.colors.surface
         }} elevation={1}>
           <View style={styles.sectionHeader}>
-            <Text variant="titleLarge" style={{ color: theme.colors.onSurface }}>Referral Partners</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text variant="titleLarge" style={{ color: theme.colors.onSurface }}>Referral Partners</Text>
+              <Link href="/add-partner" asChild>
+                <TouchableRipple 
+                  style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: 12,
+                    backgroundColor: '#E8F5E9',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginLeft: 8
+                  }}
+                  borderless
+                >
+                  <Ionicons name="add" size={16} color="#003767" />
+                </TouchableRipple>
+              </Link>
+            </View>
             {isBniConnected ? (
               <View style={styles.bniConnectedContainer}>
                 <View style={styles.bniConnectedBadge}>
                   <Ionicons name="briefcase" size={16} color="#003767" style={styles.bniIcon} />
                   <Text variant="labelSmall" style={styles.bniConnectedText}>
-                    Connected ({getUsedSlots()}/{maxPartners})
+                    Connected ({totalPartners}/{maxPartners})
                   </Text>
                 </View>
-                {availablePartners.length > 0 && (
+                {bniPartners.length > 0 && (
                   <TouchableRipple 
                     onPress={handleGoToBniMembers} 
                     style={styles.viewBniButton}
@@ -592,18 +654,6 @@ export default function DashboardV2() {
                     <Ionicons name="search" size={16} color="#003767" />
                   </TouchableRipple>
                 )}
-                <Link href="/add-partner" asChild>
-                  <TouchableRipple 
-                    style={{
-                      ...styles.viewBniButton,
-                      backgroundColor: theme.colors.primary,
-                      marginLeft: 8
-                    }}
-                    borderless
-                  >
-                    <Ionicons name="add" size={16} color="white" />
-                  </TouchableRipple>
-                </Link>
               </View>
             ) : (
               <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>
@@ -613,69 +663,107 @@ export default function DashboardV2() {
           </View>
 
           {!isBniConnected ? (
-            <Card style={styles.emptyCard}>
-              <Card.Content>
-                <Text variant="bodyLarge" style={styles.signInMessage}>
-                  Sign in with BNI to connect with referral partners and grow your network.
-                </Text>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                  <Button 
-                    mode="contained" 
-                    onPress={() => {
-                      navigate.push('BNI');
-                    }}
-                    style={{
-                      ...styles.signInButton,
-                      flex: 1,
-                      marginRight: 10
-                    }}
-                    icon="briefcase"
-                    buttonColor="#003767"
-                  >
-                    Sign in with BNI
-                  </Button>
-                  <Link href="/add-partner" asChild>
+            <>
+              <View style={{ 
+                flexDirection: isSmallScreen ? 'column' : 'row', 
+                paddingHorizontal: 20, 
+                gap: isSmallScreen ? 0 : 20 
+              }}>
+                <Card style={{ 
+                  flex: isSmallScreen ? 0 : 1, 
+                  marginBottom: 15
+                }}>
+                  <Card.Content>
+                    <Text variant="bodyLarge" style={styles.signInMessage}>
+                      Sign in with BNI to connect with referral partners and grow your network.
+                    </Text>
                     <Button 
                       mode="contained" 
-                      style={{
-                        ...styles.signInButton,
-                        flex: 1
+                      onPress={() => {
+                        navigate.push('BNI');
                       }}
-                      icon={({ size, color }) => (
-                        <Ionicons name="add" size={size} color={color} />
-                      )}
+                      style={styles.signInButton}
+                      icon="briefcase"
+                      buttonColor="#003767"
                     >
-                      Add Partner
+                      Sign in with BNI
                     </Button>
-                  </Link>
-                </View>
-              </Card.Content>
-            </Card>
+                  </Card.Content>
+                </Card>
+                
+                {manuallyAddedPartners.length > 0 && (
+                  <Card style={{ 
+                    flex: isSmallScreen ? 0 : 1, 
+                    marginBottom: 15
+                  }}>
+                    <Card.Content>
+                      <Text variant="titleMedium" style={{ marginBottom: 10, color: theme.colors.onSurface }}>
+                        Your Partners ({manuallyAddedPartners.length})
+                      </Text>
+                      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.partnersScroll}>
+                        {manuallyAddedPartners.map((partner) => (
+                          <Card key={`manual_${partner.id}`} style={styles.partnerCard} mode="outlined">
+                            <Card.Content style={styles.partnerCardContent}>
+                              <Image
+                                source={{ uri: partner.image }}
+                                style={styles.partnerImage}
+                              />
+                              <Text variant="titleMedium" style={{
+                                ...styles.partnerName,
+                                color: theme.colors.onSurface
+                              }}>
+                                {partner.name || partner.email}
+                              </Text>
+                              <Text variant="bodySmall" style={{
+                                ...styles.partnerBusiness,
+                                color: theme.colors.onSurfaceVariant
+                              }}>
+                                {partner.business || 'Pending Invitation'}
+                              </Text>
+                            </Card.Content>
+                          </Card>
+                        ))}
+                      </ScrollView>
+                    </Card.Content>
+                  </Card>
+                )}
+              </View>
+            </>
           ) : (
             <>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.partnersScroll}>
-                {availablePartners.map((partner) => (
-                  <Card key={partner.id} style={styles.partnerCard} mode="outlined">
+                {allDisplayablePartners.length > 0 ? (
+                  allDisplayablePartners.map((partner) => (
+                    <Card key={`partner_${partner.id}`} style={styles.partnerCard} mode="outlined">
+                      <Card.Content style={styles.partnerCardContent}>
+                        <Image
+                          source={{ uri: partner.image }}
+                          style={styles.partnerImage}
+                        />
+                        <Text variant="titleMedium" style={{
+                          ...styles.partnerName,
+                          color: theme.colors.onSurface
+                        }}>
+                          {partner.name || partner.email}
+                        </Text>
+                        <Text variant="bodySmall" style={{
+                          ...styles.partnerBusiness,
+                          color: theme.colors.onSurfaceVariant
+                        }}>
+                          {partner.business || 'Pending Invitation'}
+                        </Text>
+                      </Card.Content>
+                    </Card>
+                  ))
+                ) : (
+                  <Card style={[styles.partnerCard, { width: 200 }]} mode="outlined">
                     <Card.Content style={styles.partnerCardContent}>
-                      <Image
-                        source={{ uri: partner.image }}
-                        style={styles.partnerImage}
-                      />
-                      <Text variant="titleMedium" style={{
-                        ...styles.partnerName,
-                        color: theme.colors.onSurface
-                      }}>
-                        {partner.name}
-                      </Text>
-                      <Text variant="bodySmall" style={{
-                        ...styles.partnerBusiness,
-                        color: theme.colors.onSurfaceVariant
-                      }}>
-                        {partner.business}
+                      <Text variant="bodyMedium" style={{ textAlign: 'center', color: theme.colors.onSurfaceVariant }}>
+                        No partners found. Try reconnecting to BNI.
                       </Text>
                     </Card.Content>
                   </Card>
-                ))}
+                )}
               </ScrollView>
             </>
           )}
