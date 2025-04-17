@@ -7,7 +7,7 @@ export default function AppLayout() {
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="dashboard-v2" />
+      <Stack.Screen name="dashboard" />
       <Stack.Screen 
         name="details" 
         options={{

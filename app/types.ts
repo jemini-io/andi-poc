@@ -15,7 +15,7 @@ export type AppRoutes = {
   '/(onboarding)/bni-members': undefined;
   
   // App routes
-  '/(app)/dashboard-v2': undefined;
+  '/(app)/dashboard': undefined;
   '/(app)/edit-profile': undefined;
   '/(app)/received-referrals': undefined;
   '/(app)/opportunities': undefined;

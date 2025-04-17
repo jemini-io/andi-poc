@@ -1,6 +1,7 @@
 import { View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { IconButton, useTheme, Surface } from 'react-native-paper';
+import { Routes, navigate } from '../../navigation';
 
 export default function NavigationBar() {
   const router = useRouter();
@@ -12,7 +13,7 @@ export default function NavigationBar() {
         <IconButton
           icon="arrow-left"
           size={24}
-          onPress={() => router.push('/dashboard-v2')}
+          onPress={() => navigate.push('DASHBOARD')}
         />
       </View>
     </Surface>

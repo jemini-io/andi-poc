@@ -7,7 +7,7 @@ import SplashScreen from '../components/SplashScreen';
 declare module "expo-router" {
   interface TypedRoutes {
     "/connect-sources": {};
-    "/(app)/dashboard-v2": {};
+    "/(app)/dashboard": {};
   }
 }
 
@@ -15,7 +15,7 @@ export default function Index() {
   const [showSplash, setShowSplash] = useState(true);
 
   if (!showSplash) {
-    return <Redirect href="/(app)/dashboard-v2" />;
+    return <Redirect href="/(app)/dashboard" />;
   }
 
   return (

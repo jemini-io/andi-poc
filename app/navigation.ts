@@ -16,7 +16,7 @@ export const Routes = {
   BNI_MEMBERS: '/(onboarding)/bni-members',
   
   // App routes
-  DASHBOARD: '/(app)/dashboard-v2',
+  DASHBOARD: '/(app)/dashboard',
   EDIT_PROFILE: '/(app)/edit-profile',
   RECEIVED_REFERRALS: '/(app)/received-referrals',
   OPPORTUNITIES: '/(app)/opportunities',

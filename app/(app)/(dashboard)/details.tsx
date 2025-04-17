@@ -8,7 +8,7 @@ import { usePostsStore } from '../../../store/posts';
 import { useTheme, Text, Surface, Card, Button, TextInput, IconButton, Menu, Divider } from 'react-native-paper';
 import { useStatsStore } from '../../../store/stats';
 import { useProfileStore } from '../../../store/profile';
-import { navigate } from '../../../app/navigation';
+import { Routes, navigate } from '../../navigation';
 
 const generateDraftMessage = (post: any, partner: any): string => {
   const intro = "I'd like to recommend";
@@ -152,7 +152,7 @@ export default function Details() {
         <IconButton
           icon="close"
           size={24}
-          onPress={() => router.push('/dashboard-v2')}
+          onPress={() => navigate.push('DASHBOARD')}
         />
         <Text variant="titleLarge" style={styles.headerTitle}>Referral Opportunity</Text>
       </Surface>

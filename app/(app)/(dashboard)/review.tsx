@@ -2,7 +2,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { Routes, navigate } from '../../navigation';
 import { usePostsStore } from '../../../store/posts';
 import { useTheme, Text, Surface, Card, IconButton } from 'react-native-paper';
 
@@ -24,7 +24,7 @@ export default function Review() {
   }, []);
 
   const handleClose = () => {
-    router.replace('/(app)/dashboard-v2');
+    navigate.replace('DASHBOARD');
   };
 
   const getSourceIcon = (source: 'facebook' | 'instagram' | 'linkedin' | 'nextdoor' | 'alignable') => {
@@ -129,7 +129,7 @@ export default function Review() {
               <Card
                 style={styles.nextPostCard}
                 mode="outlined"
-                onPress={() => router.replace(`/(app)/(dashboard)/details?id=${nextPost.id}`)}
+                onPress={() => navigate.replace('DETAILS', { id: nextPost.id })}
               >
                 <Card.Content>
                   <View style={styles.postHeader}>

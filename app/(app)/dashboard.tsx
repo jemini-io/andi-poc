@@ -13,7 +13,7 @@ import { useState } from 'react';
 import SignInModal from '../../components/SignInModal';
 import { Routes, navigate } from '../navigation';
 
-export default function DashboardV2() {
+export default function Dashboard() {
   const theme = useTheme();
   const router = useRouter();
   const { width } = useWindowDimensions();
