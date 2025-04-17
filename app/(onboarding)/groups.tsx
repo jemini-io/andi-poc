@@ -3,6 +3,7 @@ import { View, StyleSheet, ScrollView, Image } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme, Text, Surface, Card, Button, ActivityIndicator } from 'react-native-paper';
+import { navigate } from '../../app/navigation';
 
 interface Group {
   id: string;
@@ -69,7 +70,7 @@ export default function GroupsSelection() {
   }, []);
 
   const handleContinue = () => {
-    router.replace('/bni-import');
+    navigate.replace('BNI_MEMBERS');
   };
 
   return (

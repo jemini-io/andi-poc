@@ -1,3 +1,4 @@
+import React from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { useTheme, Text, Surface, Card } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,15 +9,12 @@ import NavigationBar from '../components/NavigationBar';
 export default function GivenReferrals() {
   const theme = useTheme();
   const posts = usePostsStore(state => state.posts);
-  const { getGivenReferrals } = useStatsStore();
-  const givenReferrals = getGivenReferrals();
-
+  const hasReferral = useStatsStore(state => state.hasReferral);
+  
   // Get posts that have been referred
-  const referredPosts = posts.filter(post => 
-    givenReferrals.includes(post.id)
-  );
+  const referredPosts = posts.filter(post => hasReferral(post.id));
 
-  const getSourceIcon = (source: 'facebook' | 'instagram' | 'linkedin') => {
+  const getSourceIcon = (source: 'facebook' | 'instagram' | 'linkedin' | 'nextdoor' | 'alignable') => {
     switch (source) {
       case 'facebook':
         return 'logo-facebook';
@@ -24,6 +22,10 @@ export default function GivenReferrals() {
         return 'logo-instagram';
       case 'linkedin':
         return 'logo-linkedin';
+      case 'nextdoor':
+        return 'home-outline';
+      case 'alignable':
+        return 'business-outline';
     }
   };
 

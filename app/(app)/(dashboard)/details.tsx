@@ -1,12 +1,14 @@
 import { useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { usePartnersStore } from '../../../store/partners';
+import { usePartnersStore, Partner } from '../../../store/partners';
 import { usePostsStore } from '../../../store/posts';
-import { useTheme, Text, Surface, Card, Button, TextInput, IconButton } from 'react-native-paper';
+import { useTheme, Text, Surface, Card, Button, TextInput, IconButton, Menu, Divider } from 'react-native-paper';
 import { useStatsStore } from '../../../store/stats';
+import { useProfileStore } from '../../../store/profile';
+import { Routes, navigate } from '../../navigation';
 
 const generateDraftMessage = (post: any, partner: any): string => {
   const intro = "I'd like to recommend";
@@ -34,14 +36,66 @@ export default function Details() {
   const setDraftMessage = usePostsStore(state => state.setDraftMessage);
   const addComment = usePostsStore(state => state.addComment);
   const post = getPostById(id);
+  const partners = usePartnersStore(state => state.partners);
   const getPartnerById = usePartnersStore(state => state.getPartnerById);
   const addGivenReferral = useStatsStore(state => state.addGivenReferral);
-  const matchingPartner = post?.matchedUserId ? getPartnerById(post.matchedUserId) : undefined;
+  const profile = useProfileStore(state => state.profile);
+  
+  // Check if user is signed into BNI
+  const isBniConnected = profile.business === 'BNI Member Business';
+  // Check if user is connected to Facebook
+  const isFacebookConnected = profile.social?.facebook !== undefined;
+  
+  // Get available partners (manually added or from BNI)
+  const availablePartners = partners.filter(p => p.available === true);
+  const hasAvailablePartners = availablePartners.length > 0;
 
-  const [draftMessage, setLocalDraftMessage] = useState(
-    matchingPartner ? generateDraftMessage(post!, matchingPartner) : ''
-  );
+  // Get matching partner for post from available partners only
+  const findBestMatchingPartner = () => {
+    if (!post || !hasAvailablePartners) return undefined;
+    
+    // First check if the matched partner from the post is available
+    if (post.matchedUserId) {
+      const partner = getPartnerById(post.matchedUserId);
+      if (partner && partner.available) return partner;
+    }
+    
+    // If not, find the first available partner as a fallback
+    return availablePartners[0];
+  };
+
+  const bestMatchingPartner = findBestMatchingPartner();
+
+  // State for selected partner and partner selector menu
+  const [selectedPartner, setSelectedPartner] = useState<Partner | undefined>(bestMatchingPartner);
+  const [partnerMenuVisible, setPartnerMenuVisible] = useState(false);
+
+  // Update draft message when selected partner changes
+  const [draftMessage, setLocalDraftMessage] = useState('');
+  
+  useEffect(() => {
+    if (selectedPartner && post) {
+      setLocalDraftMessage(generateDraftMessage(post, selectedPartner));
+    }
+  }, [selectedPartner, post]);
+
+  // If available partners change, update the selected partner if needed
+  useEffect(() => {
+    if (!selectedPartner && hasAvailablePartners) {
+      setSelectedPartner(bestMatchingPartner);
+    } else if (selectedPartner && !selectedPartner.available) {
+      // If current selected partner is no longer available, switch to an available one
+      setSelectedPartner(bestMatchingPartner);
+    }
+  }, [availablePartners, selectedPartner, bestMatchingPartner]);
+
   const [isPosting, setIsPosting] = useState(false);
+
+  // Handle partner selection
+  const handleSelectPartner = (partner: Partner) => {
+    setSelectedPartner(partner);
+    setPartnerMenuVisible(false);
+  };
 
   const handlePost = async () => {
     setIsPosting(true);
@@ -98,7 +152,7 @@ export default function Details() {
         <IconButton
           icon="close"
           size={24}
-          onPress={() => router.push('/dashboard')}
+          onPress={() => navigate.push('DASHBOARD')}
         />
         <Text variant="titleLarge" style={styles.headerTitle}>Referral Opportunity</Text>
       </Surface>
@@ -142,7 +196,8 @@ export default function Details() {
           </Card.Content>
         </Card>
 
-        {matchingPartner && (
+        {/* Show Best Match and Referral Message if there are available partners */}
+        {hasAvailablePartners && (
           <>
             <Card style={styles.matchSection} mode="outlined">
               <Card.Content>
@@ -153,58 +208,117 @@ export default function Details() {
                   </Surface>
                 </View>
 
-                <View style={styles.partnerCard}>
-                  <Image
-                    source={{ uri: matchingPartner.image }}
-                    style={styles.partnerImage}
-                  />
-                  <View style={styles.partnerInfo}>
-                    <Text variant="titleMedium">{matchingPartner.name}</Text>
-                    <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-                      {matchingPartner.business}
-                    </Text>
-                    <Surface style={styles.categoryBadge} elevation={0}>
-                      <Text variant="labelSmall" style={{ color: theme.colors.primary }}>
-                        {matchingPartner.category}
-                      </Text>
-                    </Surface>
-                  </View>
+                {/* Partner selector */}
+                <View style={styles.partnerSelector}>
+                  <Menu
+                    visible={partnerMenuVisible}
+                    onDismiss={() => setPartnerMenuVisible(false)}
+                    anchor={<Button 
+                      mode="outlined" 
+                      onPress={() => setPartnerMenuVisible(true)}
+                      icon="account-switch"
+                      style={styles.partnerSelectorButton}
+                    >
+                      {selectedPartner ? 'Change Partner' : 'Select Partner'}
+                    </Button>}
+                    style={styles.partnerMenu}
+                  >
+                    {availablePartners.map(partner => (
+                      <Menu.Item
+                        key={partner.id}
+                        title={`${partner.name} - ${partner.category}`}
+                        onPress={() => handleSelectPartner(partner)}
+                      />
+                    ))}
+                  </Menu>
                 </View>
+
+                {selectedPartner && (
+                  <View style={styles.partnerCard}>
+                    <Image
+                      source={{ uri: selectedPartner.image }}
+                      style={styles.partnerImage}
+                    />
+                    <View style={styles.partnerInfo}>
+                      <Text variant="titleMedium">{selectedPartner.name}</Text>
+                      <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+                        {selectedPartner.business}
+                      </Text>
+                      <Surface style={styles.categoryBadge} elevation={0}>
+                        <Text variant="labelSmall" style={{ color: theme.colors.primary }}>
+                          {selectedPartner.category}
+                        </Text>
+                      </Surface>
+                    </View>
+                  </View>
+                )}
               </Card.Content>
             </Card>
 
-            <Card style={styles.draftSection} mode="outlined">
-              <Card.Content>
-                <Text variant="titleLarge">Your Referral Message</Text>
-                <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, marginTop: 8, marginBottom: 16 }}>
-                  Edit the message below to personalize your recommendation
-                </Text>
-                
-                <Surface style={styles.draftCard} elevation={0}>
-                  <TextInput
-                    mode="outlined"
-                    value={draftMessage}
-                    onChangeText={setLocalDraftMessage}
-                    multiline
-                    numberOfLines={10}
-                    placeholder="Enter your referral message..."
-                    style={styles.draftInput}
-                  />
-                </Surface>
+            {selectedPartner && (
+              <Card style={styles.draftSection} mode="outlined">
+                <Card.Content>
+                  <Text variant="titleLarge">Your Referral Message</Text>
+                  <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, marginTop: 8, marginBottom: 16 }}>
+                    Edit the message below to personalize your recommendation
+                  </Text>
+                  
+                  <Surface style={styles.draftCard} elevation={0}>
+                    <TextInput
+                      mode="outlined"
+                      value={draftMessage}
+                      onChangeText={setLocalDraftMessage}
+                      multiline
+                      numberOfLines={10}
+                      placeholder="Enter your referral message..."
+                      style={styles.draftInput}
+                    />
+                  </Surface>
 
-                <Button
-                  mode="contained"
-                  onPress={handlePost}
-                  loading={isPosting}
-                  disabled={isPosting || !draftMessage.trim()}
-                  style={styles.postButton}
-                  contentStyle={styles.postButtonContent}
-                >
-                  {isPosting ? 'Posting...' : 'Post Referral'}
-                </Button>
-              </Card.Content>
-            </Card>
+                  <Button
+                    mode="contained"
+                    onPress={handlePost}
+                    loading={isPosting}
+                    disabled={isPosting || !draftMessage.trim()}
+                    style={styles.postButton}
+                    contentStyle={styles.postButtonContent}
+                  >
+                    {isPosting ? 'Posting...' : 'Post Referral'}
+                  </Button>
+                </Card.Content>
+              </Card>
+            )}
           </>
+        )}
+        
+        {/* Show message when user is connected to Facebook but has no partners */}
+        {isFacebookConnected && !hasAvailablePartners && (
+          <Card style={styles.emptyCard} mode="outlined">
+            <Card.Content>
+              <Text variant="titleLarge" style={{ marginBottom: 12 }}>Connect with BNI</Text>
+              <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, marginBottom: 16 }}>
+                Cannot refer anyone to this post, no referral partners have been added. Connect to BNI, or add a referral partner!
+              </Text>
+              <View style={styles.buttonContainer}>
+                <Button 
+                  mode="contained"
+                  onPress={() => navigate.push('BNI')}
+                  icon="briefcase"
+                  buttonColor="#003767"
+                  style={{ marginRight: 8 }}
+                >
+                  Connect with BNI
+                </Button>
+                <Button 
+                  mode="contained"
+                  onPress={() => navigate.push('ADD_PARTNER')}
+                  icon="account-plus"
+                >
+                  Add Partner
+                </Button>
+              </View>
+            </Card.Content>
+          </Card>
         )}
       </ScrollView>
     </Surface>
@@ -315,5 +429,24 @@ const styles = StyleSheet.create({
   },
   postButtonContent: {
     paddingVertical: 6,
+  },
+  emptyCard: {
+    margin: 12,
+    padding: 8,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    marginTop: 8,
+  },
+  partnerSelector: {
+    marginBottom: 16,
+    position: 'relative',
+  },
+  partnerSelectorButton: {
+    marginVertical: 8,
+  },
+  partnerMenu: {
+    width: '80%',
+    maxHeight: 300,
   },
 });

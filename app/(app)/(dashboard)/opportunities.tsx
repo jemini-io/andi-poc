@@ -1,4 +1,5 @@
 import { View, StyleSheet, ScrollView } from 'react-native';
+import { useState, useEffect } from 'react';
 import { useTheme, Text, Surface, Card, TouchableRipple } from 'react-native-paper';
 import { Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,11 +7,31 @@ import { usePostsStore } from '../../../store/posts';
 import { useStatsStore } from '../../../store/stats';
 import NavigationBar from '../components/NavigationBar';
 import { ReferralOpportunity } from '../../../store/posts';
+import { useProfileStore } from '../../../store/profile';
+import AccessDeniedScreen from '../../../components/AccessDeniedScreen';
+
+// Helper function moved directly to the component
+const isUserConnectedToFacebook = (): boolean => {
+  const profile = useProfileStore.getState().profile;
+  const isAuthenticated = profile.email !== 'pat@example.com';
+  return isAuthenticated && profile.social?.facebook !== undefined;
+};
 
 export default function Opportunities() {
   const theme = useTheme();
   const posts = usePostsStore(state => state.posts);
   const hasReferral = useStatsStore(state => state.hasReferral);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+
+  useEffect(() => {
+    // Check if the user has Facebook access
+    setIsAuthorized(isUserConnectedToFacebook());
+  }, []);
+
+  // If user doesn't have Facebook access, show Access Denied screen
+  if (!isAuthorized) {
+    return <AccessDeniedScreen type="facebook" />;
+  }
 
   const availableOpportunities = posts
     .filter(post => !hasReferral(post.id))
@@ -23,7 +44,7 @@ export default function Opportunities() {
       return getTimeValue(a.timestamp) - getTimeValue(b.timestamp);
     });
 
-  const getSourceIcon = (source: 'facebook' | 'instagram' | 'linkedin') => {
+  const getSourceIcon = (source: 'facebook' | 'instagram' | 'linkedin' | 'nextdoor' | 'alignable') => {
     switch (source) {
       case 'facebook':
         return 'logo-facebook';
@@ -31,6 +52,10 @@ export default function Opportunities() {
         return 'logo-instagram';
       case 'linkedin':
         return 'logo-linkedin';
+      case 'nextdoor':
+        return 'home-outline';
+      case 'alignable':
+        return 'business-outline';
     }
   };
 
@@ -53,7 +78,7 @@ export default function Opportunities() {
           </Card>
         ) : (
           availableOpportunities.map((post) => (
-            <Link href={`/details?id=${post.id}` as any} asChild key={post.id}>
+            <Link href={{pathname: '/(app)/details', params: {id: post.id}}} asChild key={post.id}>
               <TouchableRipple>
                 <Card style={styles.postCard} mode="outlined">
                   <Card.Content>
